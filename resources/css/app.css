@@ -1,0 +1,69 @@
+@layer theme, base, primevue, components, utilities;
+
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+@import './theme.css';
+
+@source '../**/*.blade.php';
+@source '../**/*.ts';
+@source '../**/*.vue';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    html {
+        color-scheme: light;
+        background: var(--surface);
+        color: var(--ink);
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    body {
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    :root {
+        --p-font-family: var(--font-sans);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+    }
+
+    input[type='time']::-webkit-calendar-picker-indicator {
+        opacity: 0.6;
+    }
+
+    html.dark input[type='time']::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+}
+
+@layer components {
+    .card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: var(--surface-raised);
+    }
+}
+
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

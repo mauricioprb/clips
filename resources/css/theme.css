@@ -1,0 +1,37 @@
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+}
+
+:root {
+    --surface: light-dark(var(--p-surface-50), var(--p-surface-950));
+    --surface-raised: light-dark(var(--p-surface-0), var(--p-surface-900));
+    --surface-sunken: light-dark(var(--p-surface-100), var(--p-surface-800));
+    --ink: light-dark(var(--p-surface-900), var(--p-surface-100));
+    --muted: light-dark(var(--p-surface-600), var(--p-surface-400));
+    --line: light-dark(var(--p-surface-200), var(--p-surface-800));
+    --line-strong: light-dark(var(--p-surface-300), var(--p-surface-700));
+    --accent: var(--p-primary-color);
+    --accent-hover: var(--p-primary-hover-color);
+    --accent-ink: var(--p-primary-contrast-color);
+    --accent-soft: light-dark(var(--p-primary-50), color-mix(in srgb, var(--p-primary-400) 16%, transparent));
+    --accent-soft-ink: light-dark(var(--p-primary-800), var(--p-primary-200));
+    --focus: var(--p-primary-color);
+    --danger: light-dark(#c8243f, #ff7088);
+    --success: light-dark(#237a3b, #5fcf7c);
+    --warning: light-dark(#8a4b05, #f5b454);
+    --backdrop: rgb(12 17 25 / 0.5);
+    --calendar-rest: light-dark(
+        var(--p-surface-50),
+        color-mix(in srgb, var(--p-surface-900) 60%, var(--p-surface-950))
+    );
+    --calendar-today: light-dark(
+        var(--p-primary-50),
+        color-mix(in srgb, var(--p-primary-400) 8%, var(--p-surface-900))
+    );
+    --cell-muted: light-dark(var(--p-surface-50), var(--p-surface-950));
+    --source-manual: var(--accent);
+    --source-schedule: var(--muted);
+    --source-activity: var(--warning);
+}
