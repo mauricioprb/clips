@@ -1,12 +1,67 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "files.eol": "\n",
 
-  "eslint.useFlatConfig": true,
-  "eslint.workingDirectories": [{ "mode": "auto" }],
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[vue]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  }
+    "[php]": { "editor.defaultFormatter": "open-southeners.laravel-pint" },
+    "[blade]": { "editor.defaultFormatter": "open-southeners.laravel-pint" },
+    "laravel-pint.enable": true,
+    "laravel-pint.configPath": "pint.json",
+    "laravel-pint.executablePath": "vendor/bin/pint",
+
+    "prettier.requireConfig": true,
+
+    "eslint.useFlatConfig": true,
+    "eslint.validate": ["javascript", "typescript", "vue"],
+    "eslint.workingDirectories": [{ "mode": "auto" }],
+
+    "css.lint.unknownAtRules": "ignore",
+    "scss.lint.unknownAtRules": "ignore",
+    "less.lint.unknownAtRules": "ignore",
+
+    "tailwindCSS.experimental.configFile": "resources/css/app.css",
+    "tailwindCSS.includeLanguages": {
+        "vue": "html",
+        "blade": "html",
+        "php": "html"
+    },
+    "tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list"],
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+
+    "files.exclude": {
+        "**/.husky/_": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/vendor": true,
+        "**/public/build": true,
+        "**/storage/framework": true,
+        "composer.lock": true,
+        "package-lock.json": true
+    },
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/vendor/**": true,
+        "**/storage/framework/**": true,
+        "**/public/build/**": true
+    }
 }

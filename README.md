@@ -1,66 +1,64 @@
-<img src="./public/logo_clips.svg" alt="Tela inicial" width="150" />
+<img src="./public/images/logo_clips_light.svg" alt="Clips" width="150" />
 
-Sistema para gerenciamento de horas e geração de relatórios de bolsistas.
-Permite cadastrar dados do bolsista, grade semanal, atividades padrão, registrar atividades diárias, preencher dias vazios automaticamente e gerar o PDF do relatório.
+Registro de horas e relatório mensal de bolsistas. O bolsista cadastra os dados da bolsa, a grade semanal e as atividades padrão, lança as atividades de cada dia, completa o mês automaticamente e baixa o relatório em PDF.
 
-<img src="./public/demo.png" alt="Tela inicial" width="1000" />
+## Stack
 
-## Variáveis de ambiente
+| Camada           | Escolha                                                  |
+| ---------------- | -------------------------------------------------------- |
+| Backend          | Laravel 13, PHP 8.5, Fortify                             |
+| Frontend         | Inertia 3, Vue 3, TypeScript, PrimeVue 5, Tailwind CSS 4 |
+| Banco            | PostgreSQL 18                                            |
+| PDF              | dompdf (`barryvdh/laravel-dompdf`)                       |
+| Testes           | Pest 5 e Vitest                                          |
+| Estilo de código | Pint (PSR-12 com preset Laravel), ESLint e Prettier      |
+| Deploy           | Laravel Forge                                            |
 
-Crie um arquivo `.env` a partir de `.env.example`:
+## Ambiente local
 
-- `DATABASE_URL` – string de conexão PostgreSQL.
-  - Em Docker: `postgresql://clips:senha-segura@db:5432/clips?schema=public`
-  - Fora do Docker: troque o host para `localhost`.
-- `ADMIN_USERNAME` / `ADMIN_PASSWORD` – credenciais de login.
-- `SESSION_SECRET` – chave para assinar o JWT de sessão.
-- `REPORT_START_TIME` – horário inicial padrão ao preencher dias vazios (ex.: `14:00`).
-
-A carga horária semanal da bolsa agora é definida na página **Configurações** da aplicação.
-
-## Rodando local (sem Docker)
-
-1. Instale dependências:
-   ```bash
-   npm install
-   ```
-2. Garanta um PostgreSQL rodando localmente e ajuste `DATABASE_URL` (host `localhost`).
-3. Rode as migrações:
-   ```bash
-   npx prisma migrate dev
-   ```
-4. Suba o dev server:
-   ```bash
-   npm run dev
-   ```
-5. Acesse `http://localhost:3000`, faça login com as credenciais das variáveis de ambiente e navegue até `/painel`.
-
-## Rodando com Docker e docker-compose
-
-1. Copie o `.env.example` para `.env` e ajuste os valores desejados (mantendo o host do DB como `db`).
-2. Suba os serviços:
-   ```bash
-   docker compose up -d
-   ```
-   O serviço `app` depende do `db` e executa `prisma migrate deploy` antes de iniciar.
-3. Acesse `http://localhost:3000` e faça login com `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
-
-Para aplicar migrações manualmente dentro do container:
+PHP 8.5, Composer, Node 24 e Docker. O Docker sobe apenas o PostgreSQL e o Mailpit; PHP e Node rodam na máquina.
 
 ```bash
-docker compose exec app npx prisma migrate deploy
+composer install
+composer run setup
+composer run dev
 ```
 
-## Scripts úteis
+`composer run setup` copia o `.env`, gera a chave, sobe os containers, roda as migrations e compila o frontend. `composer run dev` sobe o servidor, o Vite e o log juntos.
 
-- `npm run dev` – ambiente de desenvolvimento.
-- `npm run build` / `npm run start` – build e servidor em produção.
-- `npm run prisma:migrate` – `prisma migrate dev`.
-- `npm run prisma:generate` – gera o cliente Prisma.
+- Aplicação: http://localhost:8000
+- E-mails de redefinição de senha: http://localhost:8025 (Mailpit)
+- Usuário de teste: `php artisan db:seed` cria o admin `bolsista@example.com` com a senha `password1`
 
-## Fluxo
+## Acesso por convite
 
-1. Faça login em `/entrar`.
-2. Cadastre os dados do bolsista e a carga horária semanal da bolsa em `/configuracoes`.
-3. Configure grade semanal em `/grade-semanal` e atividades padrão em `/atividades-padrao`.
-4. Use `/mes?ano=YYYY&mes=M` para registrar/editar atividades do mês, preencher dias vazios automaticamente e gerar o PDF do relatório.
+Não existe cadastro aberto. Um administrador convida a pessoa em **Usuários** com nome e e-mail, e ela recebe um link para criar a senha. O link vale por 7 dias e pode ser reenviado. Administradores também podem bloquear e desbloquear o acesso.
+
+O primeiro administrador é criado pelo terminal. O comando envia o e-mail e imprime o link:
+
+```bash
+php artisan users:invite coordenacao@ufn.edu.br "Nome da Pessoa" --admin
+```
+
+O PrimeVue 5 exige uma chave de licença. Gere uma chave Community em primeui.dev e coloque em `VITE_PRIMEUI_LICENSE`. Sem ela a interface funciona, mas mostra um aviso de licença.
+
+## Comandos
+
+```bash
+composer lint          # Pint
+composer test          # Pest
+npm run check          # ESLint, Prettier, tipos, Vitest e build
+composer run services:stop
+```
+
+O hook de pre-commit (Husky com lint-staged) formata os arquivos alterados. Como o `.npmrc` desativa scripts de instalação, ative o hook uma vez com `npx husky`.
+
+## Regras de negócio
+
+- A meta diária é a carga horária semanal dividida por 5. A meta do mês é a meta diária vezes os dias úteis.
+- Dias úteis são de segunda a sexta, exceto feriados nacionais e os feriados cadastrados pelo bolsista. No cadastro já entram a Revolução Farroupilha e o Corpus Christi, que podem ser removidos.
+- **Completar mês** lança a grade semanal nos dias em que ela vale e completa cada dia útil até a meta com as atividades padrão, primeiro de manhã (a partir de `TIMESHEET_MORNING_START`, até `TIMESHEET_MORNING_MAX_MINUTES`) e depois à tarde (a partir de `TIMESHEET_AFTERNOON_START`). Lançamentos manuais nunca são alterados nem sobrepostos.
+- A prioridade das atividades padrão define quantas vezes cada uma é usada: alta 3, média 2, baixa 1.
+- O relatório em PDF lista apenas os dias úteis. Horas lançadas em fins de semana e feriados ficam fora do total.
+
+Deploy: veja [docs/deploy.md](docs/deploy.md).
