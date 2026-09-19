@@ -44,4 +44,20 @@ export const ClipsPreset = definePreset(Aura, {
         },
         surface: coolGray,
     },
+    components: {
+        toast: {
+            root: { width: '26rem' },
+            success: {
+                background: 'light-dark({surface.0}, {surface.900})',
+                borderColor: 'light-dark({surface.200}, {surface.700})',
+                color: 'light-dark({surface.900}, {surface.100})',
+                detailColor: 'light-dark({surface.600}, {surface.400})',
+                shadow: '0 12px 32px -12px color-mix(in srgb, {surface.950}, transparent 70%)',
+                closeButton: {
+                    hoverBackground: 'light-dark({surface.100}, {surface.800})',
+                    focusRing: { color: '{primary.color}', shadow: 'none' },
+                },
+            },
+        },
+    },
 });

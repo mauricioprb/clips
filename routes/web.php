@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('can:manage-users')->controller(UserController::class)->group(function (): void {
         Route::get('/usuarios', 'index')->name('users.index');
         Route::post('/usuarios', 'store')->middleware('throttle:20,1')->name('users.store');
-        Route::post('/usuarios/{user}/convite', 'resend')->middleware('throttle:10,1')->name('users.resend');
+        Route::post('/usuarios/{user}/convite', 'resendInvitation')->middleware('throttle:10,1')->name('users.resend');
         Route::put('/usuarios/{user}', 'update')->name('users.update');
     });
 });

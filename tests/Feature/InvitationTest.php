@@ -177,3 +177,15 @@ it('invites the first admin from the command line', function (): void {
 
     $this->artisan('users:invite', ['email' => 'coord@example.com', 'name' => 'Outra'])->assertFailed();
 });
+
+it('renders the invitation email with the Clips branding', function (): void {
+    $user = User::factory()->make(['name' => 'Ana Souza']);
+
+    $html = (string) (new UserInvitation('https://clips.test/convite/abc'))->toMail($user)->render();
+
+    expect($html)
+        ->toContain('images/logo_clips_email.png')
+        ->toContain('Olá, Ana Souza!')
+        ->toContain('https://clips.test/convite/abc')
+        ->toContain('#135fa6');
+});

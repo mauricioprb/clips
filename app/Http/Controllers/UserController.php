@@ -49,7 +49,7 @@ class UserController
         return back()->with('status', 'user-invited');
     }
 
-    public function resend(User $user, SendInvitation $sendInvitation): RedirectResponse
+    public function resendInvitation(User $user, SendInvitation $sendInvitation): RedirectResponse
     {
         abort_unless($user->status() === UserStatus::InvitationPending, 422);
 

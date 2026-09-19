@@ -25,5 +25,9 @@ onBeforeUnmount(stopListening);
 </script>
 
 <template>
-    <Toast position="bottom-center" class="mb-16 md:mb-0" />
+    <Toast
+        position="bottom-center"
+        class="mb-16 max-w-[calc(100vw-2rem)] md:mb-0"
+        :pt="{ messageIcon: { class: 'text-(--success)' } }"
+    />
 </template>

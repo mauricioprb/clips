@@ -1,0 +1,220 @@
+/* Base */
+
+body,
+body *:not(html):not(style):not(br):not(tr):not(code) {
+    box-sizing: border-box;
+    font-family:
+        'Plus Jakarta Sans',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    position: relative;
+}
+
+body {
+    -webkit-text-size-adjust: none;
+    background-color: #f6f8fb;
+    color: #334155;
+    height: 100%;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+}
+
+p,
+ul,
+ol,
+blockquote {
+    color: #334155;
+    line-height: 1.6;
+    text-align: start;
+}
+
+a {
+    color: #135fa6;
+}
+
+a img {
+    border: none;
+}
+
+/* Typography */
+
+h1 {
+    color: #141b26;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-top: 0;
+    margin-bottom: 16px;
+    text-align: start;
+}
+
+h2 {
+    color: #141b26;
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 0;
+    text-align: start;
+}
+
+p {
+    font-size: 15px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    text-align: start;
+}
+
+img {
+    max-width: 100%;
+}
+
+/* Layout */
+
+.wrapper {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #f6f8fb;
+    margin: 0;
+    padding: 0 16px;
+    width: 100%;
+}
+
+.content {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Header */
+
+.header {
+    padding: 40px 0 28px;
+    text-align: center;
+}
+
+.logo {
+    height: 41px;
+    width: 140px;
+}
+
+/* Body */
+
+.body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    background-color: #f6f8fb;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.inner-body {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 560px;
+    background-color: #ffffff;
+    border: 1px solid #dfe5ee;
+    border-radius: 12px;
+    margin: 0 auto;
+    padding: 0;
+    width: 560px;
+}
+
+.inner-body a {
+    word-break: break-all;
+}
+
+.content-cell {
+    max-width: 100vw;
+    padding: 40px;
+}
+
+/* Button */
+
+.action {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 100%;
+    margin: 28px auto 32px;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+    float: unset;
+}
+
+.button {
+    -webkit-text-size-adjust: none;
+    border-radius: 8px;
+    color: #ffffff;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.button-blue,
+.button-primary {
+    background-color: #135fa6;
+    border-bottom: 12px solid #135fa6;
+    border-left: 28px solid #135fa6;
+    border-right: 28px solid #135fa6;
+    border-top: 12px solid #135fa6;
+}
+
+/* Subcopy */
+
+.subcopy {
+    border-top: 1px solid #dfe5ee;
+    margin-top: 28px;
+    padding-top: 24px;
+}
+
+.subcopy p {
+    color: #4b5a6e;
+    font-size: 13px;
+}
+
+/* Footer */
+
+.footer {
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+    -premailer-width: 560px;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+    width: 560px;
+}
+
+.footer .content-cell {
+    padding: 24px 40px 40px;
+}
+
+.footer p {
+    color: #4b5a6e;
+    font-size: 12px;
+    text-align: center;
+}
+
+.footer a {
+    color: #4b5a6e;
+    text-decoration: underline;
+}
+
+/* Utilities */
+
+.break-all {
+    word-break: break-all;
+}

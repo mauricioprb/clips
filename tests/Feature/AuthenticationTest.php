@@ -108,3 +108,10 @@ it('throttles reset link requests per email', function (): void {
 
     $this->post('/esqueci-a-senha', ['email' => $user->email])->assertTooManyRequests();
 });
+
+it('sends the password reset email in Portuguese', function (): void {
+    $mail = (new ResetPassword('token'))->toMail(User::factory()->make());
+
+    expect($mail->subject)->toBe('Redefina sua senha do Clips')
+        ->and($mail->actionText)->toBe('Redefinir senha');
+});

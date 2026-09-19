@@ -37,7 +37,14 @@ Parta do `.env.example` e ajuste no painel do Forge:
 - `APP_KEY` gerada no servidor (`php artisan key:generate`), nunca reaproveitada do ambiente local.
 - `DB_*` com os dados do banco criado pelo Forge.
 - `SESSION_ENCRYPT=true`, `SESSION_SECURE_COOKIE=true` e `SESSION_SAME_SITE=lax`.
-- `MAIL_*` com um provedor real (SMTP da instituição, Resend, Postmark ou SES) e um `MAIL_FROM_ADDRESS` do domínio. Sem isso a redefinição de senha não chega.
+- `MAIL_MAILER=resend` e `RESEND_KEY` com a chave de API do Resend. Sem isso os convites e a redefinição de senha não chegam. O domínio do `MAIL_FROM_ADDRESS` precisa estar verificado no Resend (registros SPF e DKIM no DNS):
+
+  ```dotenv
+  MAIL_MAILER=resend
+  RESEND_KEY=re_sua_chave_de_api
+  MAIL_FROM_ADDRESS="nao-responda@seu-dominio"
+  ```
+
 - `VITE_PRIMEUI_LICENSE` com a chave Community do PrimeVue. Ela é lida no `npm run build`, por isso precisa estar no `.env` do site antes do deploy. A chave vai para o JavaScript público; isso é esperado, a verificação é offline.
 
 ## Depois do primeiro deploy
