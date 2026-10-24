@@ -1,0 +1,71 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      integration-tests:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.SITE_URL }}
+    concurrency: deploy-${{ inputs.environment }}
+    env:
+      APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
+      APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: sites/app/.nvmrc
+      - run: npm install --global appwrite-cli@28.9.0
+      - run: appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$APPWRITE_API_KEY"
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+
+      - name: Esquema
+        run: |
+          if jq -e '(.teams // []) | length > 0' appwrite.config.json > /dev/null; then
+            appwrite push team --all --force
+          fi
+          appwrite push table --all --force
+
+      - name: Functions
+        run: appwrite push function --all --activate --force
+
+      - name: Site
+        run: |
+          printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
+            "$APPWRITE_ENDPOINT" "$APPWRITE_PROJECT_ID" > sites/app/.env
+          appwrite push site --all --activate --with-variables --force
+
+      - name: Teste de fumaça
+        run: curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 10 "${{ vars.SITE_URL }}/login"
+
+      - if: inputs.integration-tests
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+
+      - if: inputs.integration-tests
+        name: Testes de integração
+        run: |
+          export APPWRITE_TEST_ENDPOINT="$APPWRITE_ENDPOINT" APPWRITE_TEST_PROJECT_ID="$APPWRITE_PROJECT_ID"
+          APPWRITE_TEST_KEY=$(appwrite project create-ephemeral-key --scopes users.read --scopes users.write \
+            --scopes rows.read --scopes teams.read --scopes teams.write --duration 1800 --json --show-secrets | jq -r .secret)
+          echo "::add-mask::$APPWRITE_TEST_KEY"
+          export APPWRITE_TEST_KEY
+          for function in functions/*/; do
+            if [ -d "${function}tests/Feature" ]; then
+              (cd "$function" && composer install --no-interaction --no-progress && composer test)
+            fi
+          done

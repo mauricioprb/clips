@@ -45,7 +45,7 @@ cd sites/app && cp .env.example .env && npm ci
 
 Preencha `NUXT_PUBLIC_APPWRITE_PROJECT_ID` no `sites/app/.env` e rode `npm run dev` em `sites/app`.
 
-Num projeto Appwrite novo, além do `appwrite push` (seção Publicar), rode uma vez:
+Num projeto Appwrite novo, siga [Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao). Os passos próprios do Clips, nos dois projetos, são estes:
 
 ```bash
 appwrite project create-web-platform --platform-id localhost --name "Computador local" --hostname localhost
@@ -65,26 +65,25 @@ A pessoa então usa **Esqueceu a senha?** na tela de login para criar a senha. O
 
 ## Publicar
 
+Dois ambientes, cada um num projeto Appwrite: `clips-dev` e `clips-prod`. O `appwrite.config.json` aponta para o `-dev`, e os IDs do banco, das tabelas e das functions são os mesmos nos dois.
+
+Quem publica é o GitHub Actions (`.github/workflows/deploy.yml`):
+
+- o merge na `main` publica no `-dev` (esquema, functions, site e teste de fumaça) e roda os testes de integração;
+- o mesmo commit fica esperando no job `deploy-prod`, e o responsável técnico aprova em **Actions** → **Review deployments** → **Approve and deploy**.
+
+Endereços: desenvolvimento em `https://clips-dev.overclk.tech` e produção em `https://clips.overclk.tech`. As configurações de autenticação (`appwrite push settings`) e a política de privacidade da equipe não passam pelo pipeline: quem administra aplica com a própria sessão, nos dois projetos, sempre que essa parte do `appwrite.config.json` mudar.
+
+Durante o desenvolvimento, dá para publicar no `-dev` da sua máquina, nesta ordem:
+
 ```bash
-appwrite push settings --force
 appwrite push team --all --force
 appwrite push table --all --force
 appwrite push function --all --activate --force
 appwrite push site --site-id app --activate --with-variables --force
 ```
 
-A ordem importa: configurações e esquema, depois as functions e por último o site.
-
-O `appwrite.config.json` aponta para o projeto de desenvolvimento (`clips-dev`). Os IDs do banco, das tabelas, da equipe e das functions são iguais em todos os ambientes. Para publicar em outro ambiente, as variáveis do CLI têm prioridade sobre o arquivo:
-
-```bash
-export APPWRITE_ENDPOINT=https://<servidor>/v1
-export APPWRITE_PROJECT_ID=clips-hml
-```
-
-O `sites/app/.env` precisa ter os valores do mesmo ambiente antes do `push site`. No CI, o pipeline gera esse arquivo a partir dos segredos do ambiente. Os valores `NUXT_PUBLIC_*` ficam visíveis no navegador, então nunca guardam segredo.
-
-O site de desenvolvimento está em `https://clips-dev.overclk.tech`.
+Na produção, só pelo pipeline. Os valores `NUXT_PUBLIC_*` do `sites/app/.env` ficam visíveis no navegador, então nunca guardam segredo. O passo a passo completo está no guia, em [Publicar](https://docs.overclk.tech/guia/publicar) e [Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao).
 
 ## Verificações
 
@@ -114,7 +113,7 @@ export APPWRITE_TEST_KEY=$(appwrite project create-ephemeral-key --scopes users.
 ## Operação
 
 - Backup e restauração: scripts `backup.sh` e `restore.sh` da infraestrutura. O backup é cifrado e conferido por checksum.
-- Atualização do Appwrite: backup, atualização da homologação, `migrate`, testes, e só então produção.
+- Atualização do Appwrite: backup, ensaio num servidor temporário restaurado do backup, `migrate` e testes, e só então o servidor real (FLX-07).
 - Limites do produto: 24 lançamentos por dia, 50 horários na grade, 50 atividades padrão e 50 feriados por pessoa, 10 laboratórios no perfil e até 100 membros na equipe.
 - Bloquear um acesso mantém os dados da pessoa. Excluir a conta apaga tudo, e o sistema impede que a última pessoa administradora exclua a própria conta.
 

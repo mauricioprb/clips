@@ -58,3 +58,19 @@ jobs:
             echo "$stray_skills"
             exit 1
           fi
+
+  deploy-dev:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    needs: [functions, site, agents]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: development
+      integration-tests: true
+    secrets: inherit
+
+  deploy-prod:
+    needs: deploy-dev
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+    secrets: inherit
