@@ -59,18 +59,42 @@ jobs:
             exit 1
           fi
 
-  deploy-dev:
+  deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     needs: [functions, site, agents]
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: development
-      integration-tests: true
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency: deploy-production
+    env:
+      APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
+      APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: sites/app/.nvmrc
+      - run: npm install --global appwrite-cli@28.9.0
+      - run: appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$APPWRITE_API_KEY"
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
 
-  deploy-prod:
-    needs: deploy-dev
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: production
-    secrets: inherit
+      - name: Esquema
+        run: |
+          if jq -e '(.teams // []) | length > 0' appwrite.config.json > /dev/null; then
+            appwrite push team --all --force
+          fi
+          appwrite push table --all --force
+
+      - name: Functions
+        run: appwrite push function --all --activate --force
+
+      - name: Site
+        run: |
+          printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
+            "$APPWRITE_ENDPOINT" "$APPWRITE_PROJECT_ID" > sites/app/.env
+          appwrite push site --all --activate --with-variables --force
+
+      - name: Teste de fumaça
+        run: curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 10 "${{ vars.SITE_URL }}/login"

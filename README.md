@@ -22,69 +22,59 @@ Regras de negócio:
 - `functions/members/`: lista e bloqueia membros e exclui a própria conta.
 - `functions/user-cleanup/`: apaga os dados de um usuário quando a conta dele é apagada.
 - `sites/app/`: site Nuxt 4 em modo SPA com FUSE UI, com testes Vitest.
-- `emails/`: modelos dos e-mails de convite e de recuperação de senha, aplicados nos dois projetos pelo CLI ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao), passo 8). O logo usado neles fica em `sites/app/public/email/`.
+- `emails/`: modelos dos e-mails de convite e de recuperação de senha, aplicados no projeto de produção pelo CLI ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao), passo 8). O logo usado neles fica em `sites/app/public/email/`.
 - `docs/dados.md`: dicionário de dados.
 - `docs/decisions/`: decisões deste projeto (ADR no formato MADR), a partir de `modelo.md`.
 - `AGENTS.md`: regras para agentes de IA. Skills ficam em `.agents/skills`.
 
 ## Pré-requisitos
 
-- Appwrite 2.6.1 com SMTP configurado (o convite e a recuperação de senha são e-mails do Appwrite) e o CLI do Appwrite 28.9.0, com `appwrite login --endpoint <endpoint>/v1`.
+- Docker com Docker Compose 2 e pelo menos 4 GB de RAM livres, para o Appwrite 2.6.1 local (a mesma versão do servidor).
+- CLI do Appwrite 28.9.0.
 - PHP 8.4 ou superior com Composer, Node.js 24 (LTS) com npm. O `.nvmrc` do site fixa a versão.
 - Git com suporte a links simbólicos (`.claude/skills` aponta para `.agents/skills`).
 
 ## Primeira execução
 
-Primeira vez num projeto da fábrica? Siga o [guia do desenvolvedor](https://docs.overclk.tech): do computador vazio ao app publicado.
+Primeira vez num projeto da fábrica? Siga o [guia do desenvolvedor](https://docs.overclk.tech): do computador vazio ao app publicado. Ele explica como subir o Appwrite local.
 
-Para rodar na sua máquina:
-
-```bash
-for function in functions/*/; do (cd "$function" && composer install); done
-cd sites/app && cp .env.example .env && npm ci
-```
-
-Preencha `NUXT_PUBLIC_APPWRITE_PROJECT_ID` no `sites/app/.env` e rode `npm run dev` em `sites/app`.
-
-Num projeto Appwrite novo, siga [Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao). Os passos próprios do Clips, nos dois projetos, são estes:
+O Clips é desenvolvido e testado contra o Appwrite da sua máquina, nunca contra o servidor. No console local (`http://localhost`), crie o projeto com o ID `clips` e rode, na raiz do repositório e com o CLI logado no Appwrite local:
 
 ```bash
+appwrite push settings --force
+appwrite push team --all --force
+appwrite push table --all --force
+appwrite push function --all --activate --force
 appwrite project create-web-platform --platform-id 'unique()' --name "Computador local" --hostname localhost
 appwrite project update-membership-privacy-policy --user-id=true --user-name=false --user-email=false \
   --user-phone=false --user-mfa=false --user-accessed-at=false
 ```
 
-O primeiro comando libera o site rodando no seu computador. O segundo impede que bolsistas vejam o nome e o e-mail dos colegas pela API de equipes ([decisão 0002](docs/decisions/0002-convite-pela-equipe-do-appwrite.md)).
+A política de privacidade impede que bolsistas vejam o nome e o e-mail dos colegas pela API de equipes ([decisão 0002](docs/decisions/0002-convite-pela-equipe-do-appwrite.md)).
 
-O primeiro administrador entra pela equipe com o papel `owner`. Com a sessão do console no CLI, o convite é aceito na hora e não envia e-mail:
+Depois instale as dependências e suba o site:
 
 ```bash
-appwrite teams create-membership --team-id clips --roles owner --email coordenacao@ufn.edu.br --name "Nome da Pessoa"
+for function in functions/*/; do (cd "$function" && composer install); done
+cd sites/app && cp .env.example .env && npm ci && npm run dev
 ```
 
-A pessoa então usa **Esqueceu a senha?** na tela de login para criar a senha. Os próximos convites saem pela tela **Usuários**.
+O Appwrite local não envia e-mail, então convite e "Esqueceu a senha?" não funcionam nele. Crie o seu administrador pelo CLI, já com senha:
+
+```bash
+appwrite users create --user-id 'unique()' --email voce@exemplo.com --password 'uma-senha-local' --name "Seu Nome"
+appwrite teams create-membership --team-id clips --roles owner --user-id <id-mostrado-acima>
+```
 
 ## Publicar
 
-Dois ambientes, cada um num projeto Appwrite: `clips-dev` e `clips-prod`. O `appwrite.config.json` aponta para o `-dev`, e os IDs do banco, das tabelas e das functions são os mesmos nos dois.
+O servidor tem só a produção, no projeto `clips-prod`, em https://clips.overclk.tech. Os IDs do banco, das tabelas e das functions são os mesmos do projeto local.
 
-Quem publica é o GitHub Actions (`.github/workflows/deploy.yml`):
+O merge na `main` publica sozinho: o job `deploy` do CI envia esquema, functions e site, nessa ordem, e confere o endereço no fim. Por isso, tudo é testado na sua máquina antes do pull request. Ninguém roda `appwrite push` contra o servidor.
 
-- o merge na `main` publica no `-dev` (esquema, functions, site e teste de fumaça) e roda os testes de integração;
-- o mesmo commit fica esperando no job `deploy-prod`, e o responsável técnico aprova em **Actions** → **Review deployments** → **Approve and deploy**.
+As configurações de autenticação (`appwrite push settings`), a política de privacidade da equipe e os modelos de e-mail não passam pelo pipeline. Quem administra aplica com a própria sessão no `clips-prod`, sempre que essa parte mudar ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao)).
 
-Endereços: desenvolvimento em `https://clips-dev.overclk.tech` e produção em `https://clips.overclk.tech`. As configurações de autenticação (`appwrite push settings`) e a política de privacidade da equipe não passam pelo pipeline: quem administra aplica com a própria sessão, nos dois projetos, sempre que essa parte do `appwrite.config.json` mudar.
-
-Durante o desenvolvimento, dá para publicar no `-dev` da sua máquina, nesta ordem:
-
-```bash
-appwrite push team --all --force
-appwrite push table --all --force
-appwrite push function --all --activate --force
-appwrite push site --site-id app --activate --with-variables --force
-```
-
-Na produção, só pelo pipeline. Os valores `NUXT_PUBLIC_*` do `sites/app/.env` ficam visíveis no navegador, então nunca guardam segredo. O passo a passo completo está no guia, em [Publicar](https://docs.overclk.tech/guia/publicar) e [Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao).
+Os valores `NUXT_PUBLIC_*` do `sites/app/.env` ficam visíveis no navegador, então nunca guardam segredo.
 
 ## Verificações
 
@@ -102,11 +92,11 @@ npm test
 
 Ao commitar, um hook (Husky e lint-staged) formata os arquivos alterados com Pint, ESLint e Prettier e roda o typecheck e os testes do site. O CI (`.github/workflows/ci.yml`) repete as verificações e os testes unitários em todo pull request e push na `main`, e confere o padrão de agentes.
 
-O `composer test` roda testes de integração contra um projeto Appwrite descartável, nunca contra produção. Eles criam usuários de teste, colocam na equipe `clips` e apagam tudo no fim. A chave é efêmera e criada com a sua sessão do CLI:
+O `composer test` roda os testes de integração contra o Appwrite local, nunca contra o servidor. Eles criam usuários de teste, colocam na equipe `clips` e apagam tudo no fim. Com as functions publicadas no projeto local, crie a chave efêmera com a sua sessão do CLI local:
 
 ```bash
-export APPWRITE_TEST_ENDPOINT=https://overmaker.overclk.tech/v1
-export APPWRITE_TEST_PROJECT_ID=clips-dev
+export APPWRITE_TEST_ENDPOINT=http://localhost/v1
+export APPWRITE_TEST_PROJECT_ID=clips
 export APPWRITE_TEST_KEY=$(appwrite project create-ephemeral-key --scopes users.read --scopes users.write \
   --scopes rows.read --scopes teams.read --scopes teams.write --duration 1800 --json --show-secrets | jq -r .secret)
 ```
@@ -114,7 +104,7 @@ export APPWRITE_TEST_KEY=$(appwrite project create-ephemeral-key --scopes users.
 ## Operação
 
 - Backup e restauração: scripts `backup.sh` e `restore.sh` da infraestrutura. O backup é cifrado e conferido por checksum.
-- Atualização do Appwrite: backup, ensaio num servidor temporário restaurado do backup, `migrate` e testes, e só então o servidor real (FLX-07).
+- Atualização do Appwrite: backup, ensaio num servidor temporário restaurado do backup, `migrate` e testes, e só então o servidor real (FLX-07). O Appwrite local de quem desenvolve acompanha a versão do servidor.
 - Limites do produto: 24 lançamentos por dia, 50 horários na grade, 50 atividades padrão e 50 feriados por pessoa, 10 laboratórios no perfil e até 100 membros na equipe.
 - Bloquear um acesso mantém os dados da pessoa. Excluir a conta apaga tudo, e o sistema impede que a última pessoa administradora exclua a própria conta.
 
