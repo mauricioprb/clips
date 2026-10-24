@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Notas',
+      title: 'Clips',
       htmlAttrs: { lang: 'pt-BR' },
       script: [
         {

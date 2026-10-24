@@ -19,7 +19,7 @@ const message = computed(() =>
       :title="message"
       :description="
         isNotFound
-          ? 'Confira o endereço ou volte para suas notas.'
+          ? 'Confira o endereço ou volte para o mês atual.'
           : 'Tente novamente em instantes.'
       "
       class="w-full max-w-lg rounded-xl border border-border bg-card"
@@ -27,7 +27,7 @@ const message = computed(() =>
       <template #icon><FileQuestion aria-hidden="true" /></template>
       <template #action>
         <Button type="button" :icon-leading="RefreshCw" @click="clearError({ redirect: '/' })">
-          {{ isNotFound ? 'Voltar para minhas notas' : 'Tentar novamente' }}
+          {{ isNotFound ? 'Voltar para o mês atual' : 'Tentar novamente' }}
         </Button>
       </template>
     </EmptyState>

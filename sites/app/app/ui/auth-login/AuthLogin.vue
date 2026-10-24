@@ -17,8 +17,8 @@ defineEmits<{ submit: [] }>();
 <template>
   <AuthCard
     layout="simple"
-    title="Bem-vindo de volta"
-    description="Entre na sua conta para acessar suas notas."
+    title="Entrar no Clips"
+    description="Registre suas horas e gere o relatório mensal da bolsa."
   >
     <template #logo><AppBrand /></template>
     <form class="flex flex-col gap-5" @submit.prevent="$emit('submit')">
@@ -34,28 +34,28 @@ defineEmits<{ submit: [] }>();
         :disabled="processing"
         required
       />
-      <Input
-        id="password"
-        v-model="password"
-        label="Senha"
-        type="password"
-        name="password"
-        autocomplete="current-password"
-        :disabled="processing"
-        required
-      />
+      <div class="flex flex-col gap-1.5">
+        <Input
+          id="password"
+          v-model="password"
+          label="Senha"
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          :disabled="processing"
+          required
+        />
+        <NuxtLink
+          to="/forgot-password"
+          class="self-end text-body-sm font-medium text-primary-text underline-offset-4 hover:underline"
+        >
+          Esqueceu a senha?
+        </NuxtLink>
+      </div>
       <Button type="submit" size="lg" class="w-full" :loading="processing" loading-text="Entrando…">
         Entrar
       </Button>
     </form>
-    <template #footer>
-      Ainda não tem conta?
-      <NuxtLink
-        to="/signup"
-        class="font-semibold text-primary-text underline-offset-4 hover:underline"
-      >
-        Criar conta
-      </NuxtLink>
-    </template>
+    <template #footer>O acesso ao Clips é feito por convite da coordenação.</template>
   </AuthCard>
 </template>

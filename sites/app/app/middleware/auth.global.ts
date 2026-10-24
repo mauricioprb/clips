@@ -1,8 +1,13 @@
-const guestRoutes = ['/login', '/signup'];
+const guestRoutes = ['/login', '/forgot-password', '/reset-password'];
+const openRoutes = ['/invitation'];
 const serviceUnavailableStatus = 503;
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  const { user, refresh } = useAuth();
+  if (openRoutes.includes(to.path)) {
+    return;
+  }
+
+  const { user, access, refresh } = useAuth();
 
   if (!user.value) {
     try {
@@ -18,12 +23,17 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const isGuestRoute = guestRoutes.includes(to.path);
+  const signedIn = user.value !== null && access.value.isMember;
 
-  if (!user.value && !isGuestRoute) {
-    return navigateTo('/login');
+  if (!signedIn) {
+    return isGuestRoute ? undefined : navigateTo('/login');
   }
 
-  if (user.value && isGuestRoute) {
+  if (isGuestRoute) {
+    return navigateTo('/');
+  }
+
+  if (to.meta.adminOnly && !access.value.isAdmin) {
     return navigateTo('/');
   }
 });

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import AuthLogin from '~/ui/auth-login/AuthLogin.vue';
 
+definePageMeta({ layout: false });
+useHead({ title: 'Entrar' });
+
 const { login } = useAuth();
 
 const email = ref('');
