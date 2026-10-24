@@ -22,6 +22,7 @@ Regras de negócio:
 - `functions/members/`: lista e bloqueia membros e exclui a própria conta.
 - `functions/user-cleanup/`: apaga os dados de um usuário quando a conta dele é apagada.
 - `sites/app/`: site Nuxt 4 em modo SPA com FUSE UI, com testes Vitest.
+- `emails/`: modelos dos e-mails de convite e de recuperação de senha, aplicados nos dois projetos pelo CLI ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao), passo 8). O logo usado neles fica em `sites/app/public/email/`.
 - `docs/dados.md`: dicionário de dados.
 - `docs/decisions/`: decisões deste projeto (ADR no formato MADR), a partir de `modelo.md`.
 - `AGENTS.md`: regras para agentes de IA. Skills ficam em `.agents/skills`.
