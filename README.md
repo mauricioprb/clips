@@ -1,64 +1,113 @@
-<img src="./public/images/logo_clips_light.svg" alt="Clips" width="150" />
+# Exemplo
 
-Registro de horas e relatório mensal de bolsistas. O bolsista cadastra os dados da bolsa, a grade semanal e as atividades padrão, lança as atividades de cada dia, completa o mês automaticamente e baixa o relatório em PDF.
+## O que é
 
-## Stack
+Aplicação de referência. Qualquer pessoa cria uma conta, entra e mantém uma lista de notas que só ela enxerga. Serve de base para o repositório-modelo dos clientes.
 
-| Camada           | Escolha                                                  |
-| ---------------- | -------------------------------------------------------- |
-| Backend          | Laravel 13, PHP 8.5, Fortify                             |
-| Frontend         | Inertia 3, Vue 3, TypeScript, PrimeVue 5, Tailwind CSS 4 |
-| Banco            | PostgreSQL 18                                            |
-| PDF              | dompdf (`barryvdh/laravel-dompdf`)                       |
-| Testes           | Pest 5 e Vitest                                          |
-| Estilo de código | Pint (PSR-12 com preset Laravel), ESLint e Prettier      |
-| Deploy           | Laravel Forge                                            |
+- Usuários: pessoas com conta própria, criada por cadastro aberto.
+- Contato responsável: equipe técnica da fábrica.
 
-## Ambiente local
+## Estrutura
 
-PHP 8.5, Composer, Node 24 e Docker. O Docker sobe apenas o PostgreSQL e o Mailpit; PHP e Node rodam na máquina.
+- `appwrite.config.json`: projeto Appwrite (banco, tabelas, índices, buckets, functions e sites).
+- `functions/notes/`: API das notas em PHP 8.4, com testes Pest.
+- `functions/user-cleanup/`: apaga os dados de um usuário quando a conta dele é apagada.
+- `sites/app/`: site Nuxt 4 em modo SPA, com testes Vitest.
+- `docs/dados.md`: dicionário de dados.
+- `docs/decisions/`: decisões deste projeto (ADR no formato MADR), a partir de `modelo.md`.
+- `AGENTS.md`: regras para agentes de IA. Skills ficam em `.agents/skills`.
 
-```bash
-composer install
-composer run setup
-composer run dev
-```
+## Pré-requisitos
 
-`composer run setup` copia o `.env`, gera a chave, sobe os containers, roda as migrations e compila o frontend. `composer run dev` sobe o servidor, o Vite e o log juntos.
+- Appwrite 2.6.1 rodando (local ou homologação) e o CLI do Appwrite 28.9.0, com `appwrite login --endpoint <endpoint>/v1`.
+- PHP 8.4 ou superior com Composer, Node.js 24 (LTS) com npm. O `.nvmrc` do site fixa a versão.
+- Git com suporte a links simbólicos (`.claude/skills` aponta para `.agents/skills`).
 
-- Aplicação: http://localhost:8000
-- E-mails de redefinição de senha: http://localhost:8025 (Mailpit)
-- Usuário de teste: `php artisan db:seed` cria o admin `bolsista@example.com` com a senha `password1`
+## Primeira execução
 
-## Acesso por convite
+Primeira vez num projeto da fábrica? Siga o [guia do desenvolvedor](https://docs.overclk.tech): do computador vazio ao app publicado.
 
-Não existe cadastro aberto. Um administrador convida a pessoa em **Usuários** com nome e e-mail, e ela recebe um link para criar a senha. O link vale por 7 dias e pode ser reenviado. Administradores também podem bloquear e desbloquear o acesso.
-
-O primeiro administrador é criado pelo terminal. O comando envia o e-mail e imprime o link:
+Se o projeto já existe e você só vai rodar na sua máquina:
 
 ```bash
-php artisan users:invite coordenacao@ufn.edu.br "Nome da Pessoa" --admin
+for function in functions/*/; do (cd "$function" && composer install); done
+cd sites/app && cp .env.example .env && npm ci
 ```
 
-O PrimeVue 5 exige uma chave de licença. Gere uma chave Community em primeui.dev e coloque em `VITE_PRIMEUI_LICENSE`. Sem ela a interface funciona, mas mostra um aviso de licença.
+Preencha `NUXT_PUBLIC_APPWRITE_PROJECT_ID` no `sites/app/.env`.
 
-## Comandos
+## Publicar
 
 ```bash
-composer lint          # Pint
-composer test          # Pest
-npm run check          # ESLint, Prettier, tipos, Vitest e build
-composer run services:stop
+appwrite push table --all --force
+appwrite push function --all --activate --force
+appwrite push site --site-id app --activate --with-variables --force
 ```
 
-O hook de pre-commit (Husky com lint-staged) formata os arquivos alterados. Como o `.npmrc` desativa scripts de instalação, ative o hook uma vez com `npx husky`.
+A ordem importa: primeiro o esquema, depois as functions, por último o site.
 
-## Regras de negócio
+O `appwrite.config.json` aponta para o projeto de desenvolvimento. Os IDs do banco, das tabelas e das functions são iguais em todos os ambientes; muda só o servidor e o projeto. Para publicar em outro ambiente, as variáveis do CLI têm prioridade sobre o arquivo:
 
-- A meta diária é a carga horária semanal dividida por 5. A meta do mês é a meta diária vezes os dias úteis.
-- Dias úteis são de segunda a sexta, exceto feriados nacionais e os feriados cadastrados pelo bolsista. No cadastro já entram a Revolução Farroupilha e o Corpus Christi, que podem ser removidos.
-- **Completar mês** lança a grade semanal nos dias em que ela vale e completa cada dia útil até a meta com as atividades padrão, primeiro de manhã (a partir de `TIMESHEET_MORNING_START`, até `TIMESHEET_MORNING_MAX_MINUTES`) e depois à tarde (a partir de `TIMESHEET_AFTERNOON_START`). Lançamentos manuais nunca são alterados nem sobrepostos.
-- A prioridade das atividades padrão define quantas vezes cada uma é usada: alta 3, média 2, baixa 1.
-- O relatório em PDF lista apenas os dias úteis. Horas lançadas em fins de semana e feriados ficam fora do total.
+```bash
+export APPWRITE_ENDPOINT=https://<servidor-de-homologacao>/v1
+export APPWRITE_PROJECT_ID=exemplo-hml
+```
 
-Deploy: veja [docs/deploy.md](docs/deploy.md).
+O `sites/app/.env` precisa ter os valores do mesmo ambiente antes do `push site`. No CI, o pipeline gera esse arquivo a partir dos segredos do ambiente. Os valores `NUXT_PUBLIC_*` ficam visíveis no navegador, então nunca guardam segredo.
+
+## Componentes de interface
+
+A FUSE UI é usada somente pelo registry/CLI: o fonte dos componentes é copiado para `sites/app/app/ui/`, os estilos para `app/assets/css/`, os utilitários para `app/lib/` e os composables para `app/composables/`. O aplicativo não depende de `@overclock/fuse-ui` em execução.
+
+Login e cadastro usam adaptações locais dos componentes de autenticação. A área de notas usa AppShellStacked, PageHeader e os componentes copiados. O plugin `fuse-locale` seleciona português do Brasil. O cabeçalho mantém Logoipsum, avatar e seletor de tema, sem item de navegação redundante.
+
+O seletor oferece claro, escuro e preferência do sistema, persistidos no navegador. A paleta de `app/assets/css/theme.css` vem do gerador da FUSE, com marca `#a4472f`, neutros `trail-print` e raio `0.5rem`. `main.css` importa os estilos de base e depois as personalizações.
+
+O CLI vem do pacote npm `@overclock/fuse-ui`, fixado em `devDependencies` (hoje 0.4.0), e usa o `components.json`, que aponta para `app/`. Dentro de `sites/app`:
+
+```bash
+npx fuse-ui list
+npx fuse-ui add select
+npx fuse-ui diff
+```
+
+O `add` copia o componente e as dependências dele e preserva arquivos que já existem. O `diff` mostra o que mudou entre a cópia do projeto e o registry da versão instalada; diferenças só de formatação vêm do Prettier do projeto. Para atualizar, suba a versão do pacote, rode o `diff`, revise e substitua com `npx fuse-ui add <nome> --overwrite` só o que não foi personalizado. Hoje são personalizados `AuthLogin`, `AuthSignup`, `AuthCard`, `AppShellStacked` e `Label`, que não mostra asterisco em campo obrigatório.
+
+A licença está em `sites/app/FUSE-UI-LICENSE`, e a decisão em [FUSE UI com fonte local](docs/decisions/0001-fuse-ui-com-fonte-local.md).
+
+## Verificações
+
+```bash
+cd functions/notes
+composer lint
+composer test
+
+cd functions/user-cleanup
+composer lint
+
+cd sites/app
+npm run lint
+npm run format:check
+npm run typecheck
+npm test
+```
+
+Ao commitar, um hook (Husky e lint-staged) formata os arquivos alterados com Pint, ESLint e Prettier e roda o typecheck e os testes do site. O CI (`.github/workflows/ci.yml`) repete as verificações em todo pull request e push na `main`, e confere o padrão de agentes. No VS Code, aceite as extensões recomendadas: o editor formata ao salvar.
+
+O `composer test` roda testes de integração contra um projeto Appwrite descartável, nunca contra produção. Ele precisa de três variáveis. A chave é efêmera (no máximo uma hora) e é criada com a sua sessão do CLI:
+
+```bash
+export APPWRITE_TEST_ENDPOINT=http://localhost/v1
+export APPWRITE_TEST_PROJECT_ID=<projeto-de-teste>
+export APPWRITE_TEST_KEY=$(appwrite project create-ephemeral-key --scopes users.read --scopes users.write --scopes rows.read --duration 900 --json --show-secrets | jq -r .secret)
+```
+
+## Operação
+
+- Backup e restauração: scripts `backup.sh` e `restore.sh` da infraestrutura. O backup é cifrado e conferido por checksum.
+- Atualização do Appwrite: backup, atualização da homologação, `migrate`, testes, e só então produção.
+- Limites do produto: até 100 notas por usuário; títulos de até 255 caracteres.
+
+## Decisões
+
+As decisões deste projeto ficam em `docs/decisions/`; para registrar uma nova, copie `modelo.md` com a próxima numeração. Os contornos herdados do modelo, com o motivo de cada um, estão no `AGENTS.md`.

@@ -1,85 +1,29 @@
-# Project AGENTS.md
+# AGENTS.md
 
-Persistent context for coding agents. It records decisions that are already made. If a request conflicts with something here, name the conflict before acting.
+Sistema web sob medida sobre Appwrite 2.6 self-hosted: site Nuxt 4 em modo SPA em `sites/app` e Functions PHP 8.4 em `functions/<nome>`. A fonte de verdade do projeto Appwrite (banco, tabelas, índices, buckets, functions e sites) é o `appwrite.config.json`.
 
-## 1. How to work
+## Regras
 
-- Small, reviewable increments. Present a short plan before large changes.
-- Never commit, push or rewrite history. Never use `git checkout --`, `git restore`, `git stash` or `git reset` on uncommitted work.
-- Do not guess third-party APIs (Inertia, PrimeVue, Fortify, dompdf). Read the installed package types or the official docs.
-- Close every task with `composer lint:test`, `composer test` and `npm run check`. It is only done when all pass.
+- Regra de negócio e autorização vivem na Function. O site cuida da tela e do estado de interface, e pode repetir validações só para ajudar o usuário.
+- A identidade vem do cabeçalho `x-appwrite-user-id`. Campos de autoridade (`userId`, papel, status financeiro) são montados no servidor, campo a campo.
+- Toda mudança de banco, function, site ou bucket entra pelo `appwrite.config.json` e sobe com `appwrite push`. Mudou tabela ou coluna: atualize `docs/dados.md` na mesma mudança. Tabela nova com `userId` entra em `$tablesWithUserData` da function `user-cleanup`.
+- O código fica sem comentários. Decisões deste projeto viram ADR em `docs/decisions/`, copiando `modelo.md`.
+- Segredos ficam nos arquivos `.env`, fora do Git. Use dados fictícios: dumps, dados de produção e dados pessoais ficam fora de ferramentas de IA.
+- Todo texto em português (telas, mensagens, docs, commits e respostas) segue a skill `escrita-pt-br`.
+- Telas, componentes e estilos do site seguem a skill `fuse-ui`, que parte da documentação em `https://fuseui.overclk.tech/llms.txt` e usa só tokens do tema, sem valores arbitrários do Tailwind.
 
-## 2. Product
+## Contornos herdados do modelo
 
-Clips helps research scholarship students log daily hours and produce the monthly PDF report their advisor signs. Single user per account, no teams, no billing. Interface in Brazilian Portuguese only.
+Cada um tem motivo; mantenha até a condição de revisão acontecer.
 
-Access is invitation only, like the Lumos admin panel. There is no self registration. An admin invites someone by name and email (`InviteUser`), the person gets a link backed by the `invitations` password broker (own token table, 7 days) and sets the password on `/convite/{token}`. `User::status()` is derived: blocked when `is_active` is false, pending while `password_set_at` is null, otherwise active. Only active users can log in. The first admin comes from `php artisan users:invite email "Name" --admin`.
+- SDK PHP `appwrite/appwrite` fixo na 28.0.0, com `config.platform.php` 8.4.27: o runtime das Functions é PHP 8.4 e o SDK 29 em diante exige PHP 8.5. Revisar quando existir o runtime `php-8.5`.
+- Functions respondem JSON com `$context->res->text(json_encode(...))` e leem o corpo com `json_decode($context->req->bodyText, true)`: `res->json()` transforma listas em objetos e `bodyJson` responde 500 quando o JSON é inválido.
+- TypeScript 6.0.3 no site: o `vue-tsc` depende da API JavaScript do compilador, que o TypeScript 7 não tem.
+- O `npm audit` acusa 7 alertas com uma origem só, o `node-forge` (GHSA-86w9-cpqp-85rv). Ele entra pelo servidor de desenvolvimento do Nuxt, que só gera certificados e nunca verifica assinatura, não vai para o site publicado e não tem versão corrigida.
 
-## 3. Stack
+## Pronto
 
-| Layer       | Choice                                                                 |
-| ----------- | ---------------------------------------------------------------------- |
-| Backend     | Laravel 13, PHP 8.5, Fortify for auth and password reset               |
-| Frontend    | Inertia 3, Vue 3 `<script setup lang="ts">`, PrimeVue 5, Tailwind 4    |
-| Database    | PostgreSQL 18 (SQLite in memory for tests)                             |
-| PDF         | dompdf through `barryvdh/laravel-dompdf`, Blade view `reports/monthly` |
-| Tests       | Pest 5 (Feature and Unit), Vitest for `resources/js/Lib`               |
-| Style       | Pint (`pint.json`), ESLint flat config, Prettier                       |
-| Local infra | Docker Compose with PostgreSQL and Mailpit only                        |
-| Deploy      | Laravel Forge, triggered by the CI webhook (`docs/deploy.md`)          |
+Uma mudança está pronta quando estas verificações passam e o comportamento novo tem um teste que falha sem ela:
 
-PrimeVue 5 needs a Community license key in `VITE_PRIMEUI_LICENSE`. Do not add a dependency without approval.
-
-## 4. Architecture
-
-Default Laravel skeleton plus `Actions/`, `Support/`, `Enums/` and `Concerns/`. No Services, Repositories or DTOs.
-
-```
-app/
-├── Actions/             FillMonth, SummarizeMonth, InviteUser, SendInvitation, Fortify/*
-├── Concerns/            PasswordValidationRules
-├── Enums/               EntrySource, Priority, HolidayRecurrence
-├── Http/Controllers/    thin, one resource each, Settings/ for account pages
-├── Http/Requests/       validation lives here, never inside an Action
-├── Models/              User, TimeEntry, WeeklySlot, DefaultActivity, Holiday (UUID keys)
-├── Policies/            OwnedByUserPolicy, returns 404 for other users' records
-└── Support/             HolidayCalendar, Minutes
-
-resources/js/
-├── Pages/               Inertia pages
-├── Components/Layout/   AppLayout, AuthLayout, SettingsLayout
-├── Components/Month/    calendar, day drawer, summary, setup checklist
-├── Components/UI/       small shared pieces
-├── Composables/         useI18n, useTheme
-├── Lib/                 pure functions with Vitest tests, PrimeVue preset
-├── i18n/                pt-BR copy and PrimeVue locale
-└── types/               shared types
-```
-
-- An Action has one `execute()` method and real business logic.
-- Controllers build the Inertia payload inline in camelCase. Form fields stay snake_case.
-- Times are stored as minutes since midnight (`start_minute`, `end_minute`). Dates use the `date` column. Durations are always derived, never stored.
-
-## 5. Business rules
-
-- Daily target is the weekly workload divided by 5. The monthly target is the daily target times the workdays.
-- Workdays are Monday to Friday minus national holidays (`HolidayCalendar`) and the user's own holidays. Registration seeds Revolução Farroupilha and Corpus Christi, which the user may delete.
-- `FillMonth` runs in a transaction. It places weekly slots first, then fills free windows up to the daily target with default activities, morning then afternoon (`config/timesheet.php`). It never changes or overlaps a manual entry and is idempotent.
-- Default activity priority weights are high 3, medium 2, low 1, using smooth weighted round robin.
-- Editing any entry turns it into a manual entry.
-- The PDF lists workdays only. Weekend and holiday hours are shown in the app but excluded from the report total.
-
-## 6. UI
-
-- Every visible string lives in `resources/js/i18n/pt-BR.ts` and is read through `useI18n()`. Laravel `lang/pt_BR` only covers framework messages.
-- Colors come from the PrimeVue preset in `Lib/theme.ts` (UFN blue primary, cool gray surfaces) and the semantic variables in `resources/css/theme.css`. No literal colors in templates.
-- Use PrimeVue components for inputs, buttons, dialogs, drawer, toast and confirmations. Time inputs stay native (`InputText type="time"`) for the mobile picker.
-- Dark mode, keyboard access and WCAG 2.2 AA contrast are required in everything new.
-
-## 7. Code conventions
-
-- Code, identifiers and docs for agents in English. Product copy in Portuguese.
-- PHP: `declare(strict_types=1)`, explicit types, constructor promotion, native enums.
-- Vue: typed `defineProps<{}>()`, no `any`.
-- No comments. Rename or extract instead.
-- Plain punctuation in copy and docs: no em dashes or middots.
+- Em `functions/<nome>`: `composer lint` e `composer test` (o teste de integração precisa das variáveis descritas no README).
+- Em `sites/app`: `npm run lint`, `npm run format:check`, `npm run typecheck` e `npm test`.

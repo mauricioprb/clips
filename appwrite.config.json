@@ -1,0 +1,130 @@
+{
+    "organizationId": "6adbc415000432337d5d",
+    "projectId": "exemplo-dev",
+    "projectName": "Exemplo (dev)",
+    "functions": [
+        {
+            "$id": "notes",
+            "name": "notes",
+            "runtime": "php-8.4",
+            "buildSpecification": "s-1vcpu-512mb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
+            "execute": [
+                "users"
+            ],
+            "events": [],
+            "scopes": [
+                "rows.read",
+                "rows.write"
+            ],
+            "schedule": "",
+            "interval": 0,
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.php",
+            "commands": "composer install --no-dev",
+            "ignore": [
+                "vendor"
+            ],
+            "deploymentRetention": 0,
+            "path": "functions/notes"
+        },
+        {
+            "$id": "user-cleanup",
+            "name": "user-cleanup",
+            "runtime": "php-8.4",
+            "buildSpecification": "s-1vcpu-512mb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
+            "execute": [],
+            "events": [
+                "users.*.delete"
+            ],
+            "scopes": [
+                "rows.read",
+                "rows.write"
+            ],
+            "schedule": "",
+            "interval": 0,
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.php",
+            "commands": "composer install --no-dev",
+            "ignore": [
+                "vendor"
+            ],
+            "deploymentRetention": 0,
+            "path": "functions/user-cleanup"
+        }
+    ],
+    "sites": [
+        {
+            "$id": "app",
+            "name": "app",
+            "framework": "nuxt",
+            "adapter": "static",
+            "buildRuntime": "node-24",
+            "installCommand": "npm ci",
+            "buildCommand": "npm run generate",
+            "outputDirectory": "./.output/public",
+            "fallbackFile": "index.html",
+            "buildSpecification": "s-1vcpu-1gb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
+            "deploymentRetention": 0,
+            "timeout": 30,
+            "logging": true,
+            "path": "sites/app"
+        }
+    ],
+    "tablesDB": [
+        {
+            "$id": "exemplo",
+            "name": "exemplo",
+            "enabled": true
+        }
+    ],
+    "tables": [
+        {
+            "$id": "notes",
+            "$permissions": [],
+            "databaseId": "exemplo",
+            "name": "notes",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 36,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "title",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "asc"
+                    ]
+                }
+            ]
+        }
+    ]
+}
