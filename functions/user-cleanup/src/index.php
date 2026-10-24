@@ -9,8 +9,8 @@ use Appwrite\Query;
 use Appwrite\Services\TablesDB;
 
 return function ($context) {
-    $databaseId = 'exemplo';
-    $tablesWithUserData = ['notes'];
+    $databaseId = 'clips';
+    $tablesWithUserData = ['profiles', 'timeEntries', 'weeklySlots', 'defaultActivities', 'holidays'];
     $userDeletedEvent = '#^users\.[^.]+\.delete$#';
 
     $isUserDeletedEvent = ($context->req->headers['x-appwrite-trigger'] ?? '') === 'event'

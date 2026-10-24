@@ -1,21 +1,98 @@
 {
-    "organizationId": "6adbc415000432337d5d",
-    "projectId": "exemplo-dev",
-    "projectName": "Exemplo (dev)",
+    "organizationId": "6adc162a002312313a7a",
+    "projectId": "clips-dev",
+    "projectName": "clips-dev",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": false,
+            "databases": true,
+            "locale": false,
+            "health": true,
+            "storage": false,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": false,
+            "messaging": false
+        },
+        "protocols": {
+            "rest": true,
+            "graphql": false,
+            "websocket": false
+        },
+        "auth": {
+            "methods": {
+                "jwt": false,
+                "phone": false,
+                "invites": true,
+                "anonymous": false,
+                "email-otp": false,
+                "magic-url": false,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": null,
+                "sessionsLimit": 10,
+                "passwordHistory": null,
+                "passwordDictionary": true,
+                "personalDataCheck": true,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "teams": [
+        {
+            "$id": "clips",
+            "name": "Clips"
+        }
+    ],
     "functions": [
         {
-            "$id": "notes",
-            "name": "notes",
+            "$id": "timesheet",
+            "name": "timesheet",
             "runtime": "php-8.4",
             "buildSpecification": "s-1vcpu-512mb",
             "runtimeSpecification": "s-0.5vcpu-512mb",
             "execute": [
-                "users"
+                "team:clips"
             ],
             "events": [],
             "scopes": [
                 "rows.read",
-                "rows.write"
+                "rows.write",
+                "users.read"
+            ],
+            "schedule": "",
+            "interval": 0,
+            "timeout": 30,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.php",
+            "commands": "composer install --no-dev",
+            "ignore": [
+                "vendor"
+            ],
+            "deploymentRetention": 0,
+            "path": "functions/timesheet"
+        },
+        {
+            "$id": "members",
+            "name": "members",
+            "runtime": "php-8.4",
+            "buildSpecification": "s-1vcpu-512mb",
+            "runtimeSpecification": "s-0.5vcpu-512mb",
+            "execute": [
+                "team:clips"
+            ],
+            "events": [],
+            "scopes": [
+                "users.read",
+                "users.write",
+                "teams.read"
             ],
             "schedule": "",
             "interval": 0,
@@ -28,7 +105,7 @@
                 "vendor"
             ],
             "deploymentRetention": 0,
-            "path": "functions/notes"
+            "path": "functions/members"
         },
         {
             "$id": "user-cleanup",
@@ -79,17 +156,17 @@
     ],
     "tablesDB": [
         {
-            "$id": "exemplo",
-            "name": "exemplo",
+            "$id": "clips",
+            "name": "clips",
             "enabled": true
         }
     ],
     "tables": [
         {
-            "$id": "notes",
+            "$id": "profiles",
             "$permissions": [],
-            "databaseId": "exemplo",
-            "name": "notes",
+            "databaseId": "clips",
+            "name": "profiles",
             "enabled": true,
             "rowSecurity": false,
             "columns": [
@@ -98,25 +175,299 @@
                     "type": "varchar",
                     "required": true,
                     "array": false,
-                    "size": 36,
-                    "default": null,
-                    "encrypt": false
+                    "size": 36
                 },
                 {
-                    "key": "title",
+                    "key": "advisorName",
+                    "type": "varchar",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "scholarshipName",
+                    "type": "varchar",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "laboratories",
+                    "type": "varchar",
+                    "required": false,
+                    "array": true,
+                    "size": 120,
+                    "default": null
+                },
+                {
+                    "key": "weeklyWorkloadMinutes",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 60,
+                    "max": 2640,
+                    "default": 1200
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id",
+                    "type": "unique",
+                    "columns": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "asc"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "timeEntries",
+            "$permissions": [],
+            "databaseId": "clips",
+            "name": "timeEntries",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
                     "type": "varchar",
                     "required": true,
                     "array": false,
-                    "size": 255,
-                    "default": null,
-                    "encrypt": false
+                    "size": 36
+                },
+                {
+                    "key": "date",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 10
+                },
+                {
+                    "key": "startMinute",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 1439
+                },
+                {
+                    "key": "endMinute",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 1,
+                    "max": 1440
+                },
+                {
+                    "key": "description",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 255
+                },
+                {
+                    "key": "source",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "format": "enum",
+                    "elements": [
+                        "manual",
+                        "schedule",
+                        "activity"
+                    ]
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_date",
+                    "type": "key",
+                    "columns": [
+                        "userId",
+                        "date"
+                    ],
+                    "orders": [
+                        "asc",
+                        "asc"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "weeklySlots",
+            "$permissions": [],
+            "databaseId": "clips",
+            "name": "weeklySlots",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 36
+                },
+                {
+                    "key": "weekday",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 1,
+                    "max": 5
+                },
+                {
+                    "key": "startMinute",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 1439
+                },
+                {
+                    "key": "endMinute",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": 1,
+                    "max": 1440
+                },
+                {
+                    "key": "description",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 255
+                },
+                {
+                    "key": "validFrom",
+                    "type": "varchar",
+                    "required": false,
+                    "array": false,
+                    "size": 10,
+                    "default": null
+                },
+                {
+                    "key": "validUntil",
+                    "type": "varchar",
+                    "required": false,
+                    "array": false,
+                    "size": 10,
+                    "default": null
                 }
             ],
             "indexes": [
                 {
                     "key": "user_id",
                     "type": "key",
-                    "status": "available",
+                    "columns": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "asc"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "defaultActivities",
+            "$permissions": [],
+            "databaseId": "clips",
+            "name": "defaultActivities",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 36
+                },
+                {
+                    "key": "description",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 255
+                },
+                {
+                    "key": "priority",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "format": "enum",
+                    "elements": [
+                        "high",
+                        "medium",
+                        "low"
+                    ]
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id",
+                    "type": "key",
+                    "columns": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "asc"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "holidays",
+            "$permissions": [],
+            "databaseId": "clips",
+            "name": "holidays",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "userId",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 36
+                },
+                {
+                    "key": "name",
+                    "type": "varchar",
+                    "required": true,
+                    "array": false,
+                    "size": 120
+                },
+                {
+                    "key": "recurrence",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "format": "enum",
+                    "elements": [
+                        "once",
+                        "yearly",
+                        "corpus_christi"
+                    ]
+                },
+                {
+                    "key": "date",
+                    "type": "varchar",
+                    "required": false,
+                    "array": false,
+                    "size": 10,
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id",
+                    "type": "key",
                     "columns": [
                         "userId"
                     ],

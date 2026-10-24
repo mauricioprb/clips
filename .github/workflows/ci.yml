@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        function: [notes, user-cleanup]
+        function: [timesheet, members, user-cleanup]
     defaults:
       run:
         working-directory: functions/${{ matrix.function }}
@@ -23,6 +23,8 @@ jobs:
       - run: composer install --no-interaction --no-progress
       - run: composer check-platform-reqs
       - run: composer lint
+      - if: hashFiles(format('functions/{0}/tests/Unit/**', matrix.function)) != ''
+        run: composer test:unit
 
   site:
     runs-on: ubuntu-latest
