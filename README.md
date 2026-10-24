@@ -68,11 +68,11 @@ appwrite teams create-membership --team-id clips --roles owner --user-id <id-mos
 
 ## Publicar
 
-O servidor tem só a produção, no projeto `clips-prod`, em https://clips.overclk.tech. Os IDs do banco, das tabelas e das functions são os mesmos do projeto local.
+O servidor tem só a produção, no projeto `clips`, em https://clips.overclk.tech. É o mesmo ID do projeto local, então quem decide para onde um `appwrite push` vai é a sessão do CLI: confira `appwrite whoami` antes de publicar na sua máquina.
 
 O merge na `main` publica sozinho: o job `deploy` do CI envia esquema, functions e site, nessa ordem, e confere o endereço no fim. Por isso, tudo é testado na sua máquina antes do pull request. Ninguém roda `appwrite push` contra o servidor.
 
-As configurações de autenticação (`appwrite push settings`), a política de privacidade da equipe e os modelos de e-mail não passam pelo pipeline. Quem administra aplica com a própria sessão no `clips-prod`, sempre que essa parte mudar ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao)).
+As configurações de autenticação (`appwrite push settings`), a política de privacidade da equipe e os modelos de e-mail não passam pelo pipeline. Quem administra aplica com a própria sessão no servidor, sempre que essa parte mudar ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao)).
 
 Os valores `NUXT_PUBLIC_*` do `sites/app/.env` ficam visíveis no navegador, então nunca guardam segredo.
 

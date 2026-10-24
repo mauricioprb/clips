@@ -69,7 +69,6 @@ jobs:
     concurrency: deploy-production
     env:
       APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
-      APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -93,7 +92,7 @@ jobs:
       - name: Site
         run: |
           printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
-            "$APPWRITE_ENDPOINT" "$APPWRITE_PROJECT_ID" > sites/app/.env
+            "$APPWRITE_ENDPOINT" "$(jq -r .projectId appwrite.config.json)" > sites/app/.env
           appwrite push site --all --activate --with-variables --force
 
       - name: Teste de fumaça
