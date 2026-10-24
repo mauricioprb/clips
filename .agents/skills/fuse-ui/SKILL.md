@@ -21,7 +21,7 @@ O fonte dos componentes fica no projeto, em `sites/app/app/ui/`. Os comandos rod
 2. Se não existe, confira o nome com `npx fuse-ui list` e copie com `npx fuse-ui add <nome>`. O CLI traz as dependências do componente e preserva arquivos que já existem.
 3. Para ver o que mudou no registry, use `npx fuse-ui diff <nome>`. Diferença só de aspas e quebra de linha vem do Prettier do projeto e não é atualização.
 
-`AuthLogin`, `AuthSignup`, `AuthCard`, `AppShellStacked` e `Label` são personalizados. Mudanças neles são feitas à mão, e o `add --overwrite` fica reservado aos componentes que ainda estão iguais ao registry.
+`AuthLogin`, `AuthCard`, `AppShellStacked` e `Label` são personalizados. Mudanças neles são feitas à mão, e o `add --overwrite` fica reservado aos componentes que ainda estão iguais ao registry.
 
 Os textos padrão dos componentes vêm do plugin `fuse-locale`, em português do Brasil. Texto específico da tela entra pela prop do componente.
 
