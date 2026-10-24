@@ -1,0 +1,133 @@
+@theme static {
+  --color-blue-spark-100: #e9f1fd;
+  --color-blue-spark-200: #d4e4fa;
+  --color-blue-spark-300: #a9c9f5;
+  --color-blue-spark-400: #7dadf0;
+  --color-blue-spark-500: #5091eb;
+  --color-blue-spark-600: #2174e6;
+  --color-blue-spark-700: #0057ce;
+  --color-blue-spark-800: #00429c;
+  --color-blue-spark-900: #002d6c;
+  --color-blue-spark-1000: #001b3f;
+
+  --color-sea-sight-100: #e8f3f6;
+  --color-sea-sight-200: #d0e6ed;
+  --color-sea-sight-300: #a2cddc;
+  --color-sea-sight-400: #73b4ca;
+  --color-sea-sight-500: #449bb8;
+  --color-sea-sight-600: #1281a5;
+  --color-sea-sight-700: #006687;
+  --color-sea-sight-800: #004d66;
+  --color-sea-sight-900: #003546;
+  --color-sea-sight-1000: #001f29;
+
+  --color-macquarie-100: #e7f3f3;
+  --color-macquarie-200: #d0e7e8;
+  --color-macquarie-300: #a1cfd1;
+  --color-macquarie-400: #72b7b9;
+  --color-macquarie-500: #429ea1;
+  --color-macquarie-600: #108489;
+  --color-macquarie-700: #00696d;
+  --color-macquarie-800: #004f52;
+  --color-macquarie-900: #003739;
+  --color-macquarie-1000: #002021;
+
+  --color-generic-viridian-100: #e7f3f1;
+  --color-generic-viridian-200: #d0e7e2;
+  --color-generic-viridian-300: #a1d0c5;
+  --color-generic-viridian-400: #71b8a8;
+  --color-generic-viridian-500: #40a08a;
+  --color-generic-viridian-600: #0e876b;
+  --color-generic-viridian-700: #006c53;
+  --color-generic-viridian-800: #00513f;
+  --color-generic-viridian-900: #00382b;
+  --color-generic-viridian-1000: #002019;
+
+  --color-green-bell-pepper-100: #eaf3e7;
+  --color-green-bell-pepper-200: #d6e8cf;
+  --color-green-bell-pepper-300: #add09f;
+  --color-green-bell-pepper-400: #84b96f;
+  --color-green-bell-pepper-500: #5aa13e;
+  --color-green-bell-pepper-600: #2f890c;
+  --color-green-bell-pepper-700: #1f6d00;
+  --color-green-bell-pepper-800: #175200;
+  --color-green-bell-pepper-900: #103900;
+  --color-green-bell-pepper-1000: #092100;
+
+  --color-sizzling-sunrise-100: #fff2a5;
+  --color-sizzling-sunrise-200: #ffe336;
+  --color-sizzling-sunrise-300: #eac300;
+  --color-sizzling-sunrise-400: #d0a600;
+  --color-sizzling-sunrise-500: #bd8a00;
+  --color-sizzling-sunrise-600: #9d6e00;
+  --color-sizzling-sunrise-700: #7d5800;
+  --color-sizzling-sunrise-800: #624000;
+  --color-sizzling-sunrise-900: #432c00;
+  --color-sizzling-sunrise-1000: #271900;
+
+  --color-golden-stone-100: #fff0cb;
+  --color-golden-stone-200: #ffdf93;
+  --color-golden-stone-300: #ffbb16;
+  --color-golden-stone-400: #e99b00;
+  --color-golden-stone-500: #c78100;
+  --color-golden-stone-600: #a96800;
+  --color-golden-stone-700: #885200;
+  --color-golden-stone-800: #663d00;
+  --color-golden-stone-900: #462a00;
+  --color-golden-stone-1000: #281800;
+
+  --color-lucky-orange-100: #ffeedf;
+  --color-lucky-orange-200: #ffdcbe;
+  --color-lucky-orange-300: #ffb77a;
+  --color-lucky-orange-400: #ff8e2c;
+  --color-lucky-orange-500: #e96c00;
+  --color-lucky-orange-600: #c05900;
+  --color-lucky-orange-700: #994700;
+  --color-lucky-orange-800: #733500;
+  --color-lucky-orange-900: #4f2500;
+  --color-lucky-orange-1000: #2e1500;
+
+  --color-electric-crimson-100: #ffecf1;
+  --color-electric-crimson-200: #ffd9e3;
+  --color-electric-crimson-300: #ffb1c5;
+  --color-electric-crimson-400: #ff85a4;
+  --color-electric-crimson-500: #ff4e7b;
+  --color-electric-crimson-600: #ed003d;
+  --color-electric-crimson-700: #bf0031;
+  --color-electric-crimson-800: #920025;
+  --color-electric-crimson-900: #67001a;
+  --color-electric-crimson-1000: #400010;
+
+  --color-snappy-violet-100: #ffebf8;
+  --color-snappy-violet-200: #ffd7f1;
+  --color-snappy-violet-300: #ffade2;
+  --color-snappy-violet-400: #ff7ed1;
+  --color-snappy-violet-500: #ff3dba;
+  --color-snappy-violet-600: #e30093;
+  --color-snappy-violet-700: #b60076;
+  --color-snappy-violet-800: #8b005a;
+  --color-snappy-violet-900: #620040;
+  --color-snappy-violet-1000: #3d0027;
+
+  --color-psychedelic-purple-100: #fcebff;
+  --color-psychedelic-purple-200: #f9d8ff;
+  --color-psychedelic-purple-300: #f3aeff;
+  --color-psychedelic-purple-400: #ec81ff;
+  --color-psychedelic-purple-500: #e447ff;
+  --color-psychedelic-purple-600: #c900ec;
+  --color-psychedelic-purple-700: #a100bd;
+  --color-psychedelic-purple-800: #7b0090;
+  --color-psychedelic-purple-900: #570066;
+  --color-psychedelic-purple-1000: #35003f;
+
+  --color-electric-indigo-100: #f5eeff;
+  --color-electric-indigo-200: #eaddff;
+  --color-electric-indigo-300: #d5baff;
+  --color-electric-indigo-400: #c098ff;
+  --color-electric-indigo-500: #aa74ff;
+  --color-electric-indigo-600: #914cff;
+  --color-electric-indigo-700: #7016ff;
+  --color-electric-indigo-800: #5000cf;
+  --color-electric-indigo-900: #390093;
+  --color-electric-indigo-1000: #23005b;
+}

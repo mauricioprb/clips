@@ -1,0 +1,19 @@
+{
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "appwrite/appwrite": "28.0.0"
+    },
+    "require-dev": {
+        "laravel/pint": "1.32.1"
+    },
+    "config": {
+        "platform": {
+            "php": "8.4.27"
+        }
+    },
+    "scripts": {
+        "lint": "pint --test",
+        "format": "pint"
+    }
+}

@@ -1,0 +1,244 @@
+@import 'tailwindcss';
+@import './base.css';
+@import './colors.css';
+@import './effects.css';
+@import './typography.css';
+@import './motion.css';
+
+@theme {
+  --breakpoint-tablet: 834px;
+  --breakpoint-desktop: 1280px;
+}
+
+@custom-variant dark (&:is(.dark *):not(.light *));
+
+:root {
+  color-scheme: light;
+  --radius: 0.5rem;
+
+  --background: var(--color-white-100);
+  --foreground: var(--color-obsidian-900);
+
+  --popover: var(--color-white-100);
+  --popover-foreground: var(--color-obsidian-900);
+
+  --card: var(--color-white-100);
+  --card-foreground: var(--color-obsidian-900);
+
+  --muted: var(--color-obsidian-100);
+  --muted-foreground: var(--color-obsidian-700);
+
+  --accent: var(--color-obsidian-100);
+  --accent-foreground: var(--color-obsidian-900);
+
+  --border: var(--color-obsidian-200);
+  --input: var(--color-obsidian-300);
+  --ring: var(--color-blue-spark-600);
+
+  --primary: var(--color-blue-spark-700);
+  --primary-hover: var(--color-blue-spark-800);
+  --primary-active: var(--color-blue-spark-900);
+  --primary-foreground: var(--color-white-100);
+  --primary-soft: var(--color-blue-spark-100);
+  --primary-soft-foreground: var(--color-blue-spark-700);
+  --primary-text: var(--color-blue-spark-700);
+
+  --secondary: var(--color-obsidian-100);
+  --secondary-hover: var(--color-obsidian-200);
+  --secondary-active: var(--color-obsidian-300);
+  --secondary-foreground: var(--color-obsidian-800);
+
+  --info: var(--color-blue-spark-700);
+  --info-foreground: var(--color-white-100);
+  --info-soft: var(--color-blue-spark-100);
+  --info-soft-foreground: var(--color-blue-spark-700);
+
+  --danger: var(--color-electric-crimson-700);
+  --danger-hover: var(--color-electric-crimson-800);
+  --danger-active: var(--color-electric-crimson-900);
+  --danger-foreground: var(--color-white-100);
+
+  --danger-soft: var(--color-electric-crimson-100);
+  --danger-soft-hover: var(--color-electric-crimson-200);
+  --danger-soft-foreground: var(--color-electric-crimson-700);
+
+  --success: var(--color-green-bell-pepper-700);
+  --success-foreground: var(--color-white-100);
+  --success-soft: var(--color-green-bell-pepper-100);
+  --success-soft-foreground: var(--color-green-bell-pepper-700);
+
+  --warning: var(--color-lucky-orange-700);
+  --warning-hover: var(--color-lucky-orange-800);
+  --warning-active: var(--color-lucky-orange-900);
+  --warning-foreground: var(--color-white-100);
+  --warning-soft: var(--color-lucky-orange-100);
+  --warning-soft-foreground: var(--color-lucky-orange-700);
+
+  --chart-1: var(--color-blue-spark-600);
+  --chart-2: var(--color-sea-sight-600);
+  --chart-3: var(--color-generic-viridian-600);
+  --chart-4: var(--color-golden-stone-600);
+  --chart-5: var(--color-snappy-violet-600);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: var(--color-obsidian-1000);
+  --foreground: var(--color-obsidian-100);
+
+  --popover: var(--color-obsidian-900);
+  --popover-foreground: var(--color-obsidian-100);
+
+  --card: var(--color-obsidian-900);
+  --card-foreground: var(--color-obsidian-100);
+
+  --muted: var(--color-obsidian-900);
+  --muted-foreground: var(--color-obsidian-400);
+
+  --accent: var(--color-obsidian-800);
+  --accent-foreground: var(--color-obsidian-100);
+
+  --border: var(--color-obsidian-800);
+  --input: var(--color-obsidian-700);
+  --ring: var(--color-blue-spark-500);
+
+  --primary: var(--color-blue-spark-400);
+  --primary-hover: var(--color-blue-spark-300);
+  --primary-active: var(--color-blue-spark-200);
+  --primary-foreground: var(--color-blue-spark-1000);
+  --primary-soft: var(--color-blue-spark-900);
+  --primary-soft-foreground: var(--color-blue-spark-300);
+  --primary-text: var(--color-blue-spark-400);
+
+  --secondary: var(--color-obsidian-800);
+  --secondary-hover: var(--color-obsidian-700);
+  --secondary-active: var(--color-obsidian-600);
+  --secondary-foreground: var(--color-obsidian-100);
+
+  --info: var(--color-blue-spark-400);
+  --info-foreground: var(--color-blue-spark-1000);
+  --info-soft: var(--color-blue-spark-900);
+  --info-soft-foreground: var(--color-blue-spark-300);
+
+  --danger: var(--color-electric-crimson-400);
+  --danger-hover: var(--color-electric-crimson-300);
+  --danger-active: var(--color-electric-crimson-200);
+  --danger-foreground: var(--color-electric-crimson-1000);
+
+  --danger-soft: var(--color-electric-crimson-900);
+  --danger-soft-hover: var(--color-electric-crimson-800);
+  --danger-soft-foreground: var(--color-electric-crimson-200);
+
+  --success: var(--color-green-bell-pepper-400);
+  --success-foreground: var(--color-green-bell-pepper-1000);
+  --success-soft: var(--color-green-bell-pepper-900);
+  --success-soft-foreground: var(--color-green-bell-pepper-300);
+
+  --warning: var(--color-lucky-orange-400);
+  --warning-hover: var(--color-lucky-orange-300);
+  --warning-active: var(--color-lucky-orange-200);
+  --warning-foreground: var(--color-lucky-orange-1000);
+  --warning-soft: var(--color-lucky-orange-900);
+  --warning-soft-foreground: var(--color-lucky-orange-300);
+
+  --chart-1: var(--color-blue-spark-500);
+  --chart-2: var(--color-sea-sight-500);
+  --chart-3: var(--color-generic-viridian-500);
+  --chart-4: var(--color-golden-stone-500);
+  --chart-5: var(--color-snappy-violet-500);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-primary-text: var(--primary-text);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-active: var(--secondary-active);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-foreground: var(--info-soft-foreground);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-active: var(--danger-active);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-hover: var(--danger-soft-hover);
+  --color-danger-soft-foreground: var(--danger-soft-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-active: var(--warning-active);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+  }
+  html {
+    scrollbar-color: color-mix(in oklab, var(--color-foreground) 25%, transparent) transparent;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-primary) 22%, transparent);
+  }
+  input,
+  textarea {
+    caret-color: var(--color-primary);
+  }
+}
+
+.disable-transitions,
+.disable-transitions * {
+  transition: none !important;
+}

@@ -1,99 +1,99 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  php:
-    name: PHP tests
+  functions:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        function: [timesheet, members, user-cleanup]
+    defaults:
+      run:
+        working-directory: functions/${{ matrix.function }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.5"
-          extensions: pdo_pgsql, pdo_sqlite, mbstring, intl, gd, zip
-          coverage: none
+          php-version: '8.4'
+          tools: composer
+      - run: composer install --no-interaction --no-progress
+      - run: composer check-platform-reqs
+      - run: composer lint
+      - if: hashFiles(format('functions/{0}/tests/Unit/**', matrix.function)) != ''
+        run: composer test:unit
 
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Audit production dependencies
-        run: composer audit --locked --no-dev
-
-      - name: Pint
-        run: composer lint:test
-
-      - name: Pest
-        run: composer test
-
-  frontend:
-    name: Frontend checks and build
+  site:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: sites/app
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: sites/app/.nvmrc
           cache: npm
+          cache-dependency-path: sites/app/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: ESLint
-        run: npm run lint:test
-
-      - name: Prettier
-        run: npm run format:test
-
-      - name: Type check
-        run: npm run type-check
-
-      - name: Vitest
-        run: npm test
-
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Build
-        run: npm run build
+  agents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Instruções só no AGENTS.md e skills só em .agents/skills
+        run: |
+          forbidden=$(git ls-files 'CLAUDE.md' '**/CLAUDE.md' '.cursorrules' 'GEMINI.md' '.github/copilot-instructions.md')
+          stray_skills=$(git ls-files '**/SKILL.md' | grep -v '^\.agents/skills/' || true)
+          if [ -n "$forbidden$stray_skills" ]; then
+            echo "Arquivos fora do padrão de agentes:"
+            echo "$forbidden"
+            echo "$stray_skills"
+            exit 1
+          fi
 
   deploy:
-    name: Deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    needs: [functions, site, agents]
     runs-on: ubuntu-latest
-    needs: [php, frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    concurrency:
-      group: deploy-production
-      cancel-in-progress: false
-
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency: deploy-production
+    env:
+      APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
     steps:
-      - name: Trigger Forge deployment
-        run: curl --fail --silent --show-error --request POST "$DEPLOY_WEBHOOK"
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: sites/app/.nvmrc
+      - run: npm install --global appwrite-cli@28.9.0
+      - run: appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$APPWRITE_API_KEY"
         env:
-          DEPLOY_WEBHOOK: ${{ secrets.FORGE_DEPLOY_WEBHOOK }}
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+
+      - name: Esquema
+        run: |
+          if jq -e '(.teams // []) | length > 0' appwrite.config.json > /dev/null; then
+            appwrite push team --all --force
+          fi
+          appwrite push table --all --force
+
+      - name: Functions
+        run: appwrite push function --all --activate --force
+
+      - name: Site
+        run: |
+          printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
+            "$APPWRITE_ENDPOINT" "$(jq -r .projectId appwrite.config.json)" > sites/app/.env
+          appwrite push site --all --activate --with-variables --force
+
+      - name: Teste de fumaça
+        run: curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 10 "${{ vars.SITE_URL }}/login"

@@ -1,0 +1,15 @@
+@theme static {
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-s: 0 1px 2px -1px rgb(0 0 0 / 0.04), 0 2px 4px -1px rgb(0 0 0 / 0.05);
+  --shadow-m: 0 2px 4px -1px rgb(0 0 0 / 0.04), 0 6px 12px -2px rgb(0 0 0 / 0.07);
+  --shadow-l: 0 4px 8px -2px rgb(0 0 0 / 0.05), 0 12px 28px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 8px 16px -4px rgb(0 0 0 / 0.06), 0 20px 48px -8px rgb(0 0 0 / 0.14);
+  --shadow-xxl: 0 32px 64px -16px rgb(0 0 0 / 0.2);
+
+  --blur-xs: 4px;
+  --blur-s: 8px;
+  --blur-m: 12px;
+  --blur-l: 16px;
+  --blur-xl: 24px;
+  --blur-xxl: 40px;
+}
