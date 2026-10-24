@@ -48,7 +48,7 @@ Preencha `NUXT_PUBLIC_APPWRITE_PROJECT_ID` no `sites/app/.env` e rode `npm run d
 Num projeto Appwrite novo, siga [Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao). Os passos próprios do Clips, nos dois projetos, são estes:
 
 ```bash
-appwrite project create-web-platform --platform-id localhost --name "Computador local" --hostname localhost
+appwrite project create-web-platform --platform-id 'unique()' --name "Computador local" --hostname localhost
 appwrite project update-membership-privacy-policy --user-id=true --user-name=false --user-email=false \
   --user-phone=false --user-mfa=false --user-accessed-at=false
 ```
