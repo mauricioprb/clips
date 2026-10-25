@@ -1,7 +1,7 @@
 {
     "organizationId": "6adc162a002312313a7a",
-    "projectId": "clips",
-    "projectName": "Clips",
+    "projectId": "clips-dev",
+    "projectName": "Clips dev",
     "settings": {
         "services": {
             "account": true,
