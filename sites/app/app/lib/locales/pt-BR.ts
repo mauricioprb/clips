@@ -142,6 +142,10 @@ export const ptBR: FuseLocale = {
     applyLabel: 'Aplicar',
     cancelLabel: 'Cancelar',
   },
+  timePicker: {
+    clearLabel: 'Limpar',
+    openLabel: 'Escolher horário',
+  },
   dateRangePicker: {
     placeholder: 'Escolha um período',
     clearLabel: 'Limpar',

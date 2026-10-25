@@ -140,6 +140,10 @@ export const en = {
     applyLabel: 'Apply',
     cancelLabel: 'Cancel',
   },
+  timePicker: {
+    clearLabel: 'Clear',
+    openLabel: 'Choose a time',
+  },
   dateRangePicker: {
     placeholder: 'Pick a date range',
     clearLabel: 'Clear',
