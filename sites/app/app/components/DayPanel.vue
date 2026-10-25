@@ -6,6 +6,7 @@ import { Badge } from '~/ui/badge';
 import { Button } from '~/ui/button';
 import Input from '~/ui/input/Input.vue';
 import { Sheet, SheetContent } from '~/ui/sheet';
+import { TimePicker } from '~/ui/time-picker';
 import { toast } from '~/ui/toast';
 
 const props = defineProps<{
@@ -17,8 +18,8 @@ const emit = defineEmits<{ close: [] }>();
 
 const { saveEntry, removeEntry } = useMonth();
 const editing = ref<TimeEntry | null>(null);
-const start = ref('08:00');
-const end = ref('09:00');
+const start = ref<string | undefined>('08:00');
+const end = ref<string | undefined>('09:00');
 const description = ref('');
 const error = ref('');
 const saving = ref(false);
@@ -169,24 +170,8 @@ watch(
         </h3>
         <Alert v-if="error" intent="danger" variant="soft">{{ error }}</Alert>
         <div class="grid grid-cols-2 gap-3">
-          <Input
-            id="entry-start"
-            v-model="start"
-            label="Início"
-            type="time"
-            step="300"
-            required
-            class="tabular-nums"
-          />
-          <Input
-            id="entry-end"
-            v-model="end"
-            label="Fim"
-            type="time"
-            step="300"
-            required
-            class="tabular-nums"
-          />
+          <TimePicker id="entry-start" v-model="start" label="Início" :step="15" required />
+          <TimePicker id="entry-end" v-model="end" label="Fim" :step="15" required />
         </div>
         <Input
           id="entry-description"

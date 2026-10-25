@@ -16,6 +16,7 @@ import Input from '~/ui/input/Input.vue';
 import { PageHeader } from '~/ui/page-header';
 import { Select } from '~/ui/select';
 import { Skeleton } from '~/ui/skeleton';
+import { TimePicker } from '~/ui/time-picker';
 import { toast } from '~/ui/toast';
 
 useHead({ title: 'Grade semanal' });
@@ -38,8 +39,8 @@ const dialogOpen = ref(false);
 const confirmDelete = ref(false);
 const editing = ref<WeeklySlot | null>(null);
 const weekday = ref('1');
-const start = ref('08:00');
-const end = ref('10:00');
+const start = ref<string | undefined>('08:00');
+const end = ref<string | undefined>('10:00');
 const description = ref('');
 const validFrom = ref('');
 const validUntil = ref('');
@@ -255,8 +256,8 @@ onMounted(loadAll);
             required
           />
           <div class="grid grid-cols-2 gap-3">
-            <Input id="slot-start" v-model="start" label="Início" type="time" step="300" required />
-            <Input id="slot-end" v-model="end" label="Fim" type="time" step="300" required />
+            <TimePicker id="slot-start" v-model="start" label="Início" :step="15" required />
+            <TimePicker id="slot-end" v-model="end" label="Fim" :step="15" required />
           </div>
           <Input
             id="slot-description"
