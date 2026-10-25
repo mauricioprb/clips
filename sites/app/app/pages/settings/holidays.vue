@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2 } from '@lucide/vue'
 import type { Holiday, HolidayRecurrence } from '~/composables/useHolidays';
 import { Alert } from '~/ui/alert';
 import { Button } from '~/ui/button';
+import { DatePicker } from '~/ui/date-picker';
 import Input from '~/ui/input/Input.vue';
 import { PageHeader } from '~/ui/page-header';
 import { Select } from '~/ui/select';
@@ -26,6 +27,7 @@ const loadError = ref('');
 const name = ref('');
 const recurrence = ref<HolidayRecurrence>('yearly');
 const date = ref('');
+const dateValue = isoDateModel(date);
 const formError = ref('');
 const saving = ref(false);
 const removingId = ref<string | null>(null);
@@ -54,6 +56,10 @@ async function loadYear() {
 async function submit() {
   if (saving.value) return;
   formError.value = '';
+  if (recurrence.value !== 'corpus_christi' && !date.value) {
+    formError.value = 'Escolha a data do feriado.';
+    return;
+  }
   saving.value = true;
   try {
     await create(
@@ -100,7 +106,7 @@ watch(year, loadYear, { immediate: true });
       description="Estaduais e municipais que valem na sua instituição. Os nacionais já estão incluídos."
     >
       <div class="flex flex-col gap-3 px-5 py-5 sm:px-6">
-        <form class="flex flex-col gap-3 sm:flex-row sm:items-end" @submit.prevent="submit">
+        <form class="flex flex-col gap-3 sm:flex-row sm:items-start" @submit.prevent="submit">
           <Input
             id="holiday-name"
             v-model="name"
@@ -117,16 +123,18 @@ watch(year, loadYear, { immediate: true });
             :options="recurrenceOptions"
             class="sm:w-60"
           />
-          <Input
+          <DatePicker
             v-if="recurrence !== 'corpus_christi'"
             id="holiday-date"
-            v-model="date"
+            v-model="dateValue"
             label="Data"
-            type="date"
+            date-style="short"
             required
             class="sm:w-44"
           />
-          <Button type="submit" :icon-leading="Plus" :loading="saving">Adicionar</Button>
+          <Button type="submit" class="sm:mt-7" :icon-leading="Plus" :loading="saving"
+            >Adicionar</Button
+          >
         </form>
         <Alert v-if="formError" intent="danger" variant="soft">{{ formError }}</Alert>
       </div>

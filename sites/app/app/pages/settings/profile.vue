@@ -3,6 +3,7 @@ import { RefreshCw } from '@lucide/vue';
 import { Alert } from '~/ui/alert';
 import { Button } from '~/ui/button';
 import Input from '~/ui/input/Input.vue';
+import { NumberField } from '~/ui/number-field';
 import { PageHeader } from '~/ui/page-header';
 import { SettingsRow, SettingsSection } from '~/ui/settings-section';
 import { Skeleton } from '~/ui/skeleton';
@@ -100,31 +101,41 @@ onMounted(loadProfile);
         title="Bolsista"
         description="O seu nome vai no relatório. Para trocar o e-mail, use a seção Conta e senha."
       >
-        <SettingsRow label="Nome completo" for="profile-name">
-          <Input id="profile-name" v-model="name" autocomplete="name" :maxlength="128" required />
+        <SettingsRow layout="stacked" label="Nome completo" for="profile-name">
+          <Input
+            id="profile-name"
+            v-model="name"
+            autocomplete="name"
+            :maxlength="128"
+            required
+            class="flex-1"
+          />
         </SettingsRow>
       </SettingsSection>
 
       <SettingsSection title="Bolsa" description="Estes dados aparecem no cabeçalho do relatório.">
-        <SettingsRow label="Orientador" for="profile-advisor">
+        <SettingsRow layout="stacked" label="Orientador" for="profile-advisor">
           <Input
             id="profile-advisor"
             v-model="advisorName"
             placeholder="Nome completo do orientador"
             :maxlength="255"
             required
+            class="flex-1"
           />
         </SettingsRow>
-        <SettingsRow label="Bolsa" for="profile-scholarship">
+        <SettingsRow layout="stacked" label="Bolsa" for="profile-scholarship">
           <Input
             id="profile-scholarship"
             v-model="scholarshipName"
             placeholder="Ex.: CAPES"
             :maxlength="255"
             required
+            class="flex-1"
           />
         </SettingsRow>
         <SettingsRow
+          layout="stacked"
           label="Laboratórios ou salas"
           description="Digite o nome e pressione Enter."
           for="profile-laboratories"
@@ -136,6 +147,7 @@ onMounted(loadProfile);
             :max="10"
             delete-label="Remover"
             add-on-blur
+            class="flex-1"
           />
         </SettingsRow>
       </SettingsSection>
@@ -145,19 +157,20 @@ onMounted(loadProfile);
         description="Define a meta de cada dia útil ao completar o mês."
       >
         <SettingsRow
+          layout="stacked"
           label="Horas por semana"
           :description="`Meta de ${dailyTarget} por dia útil.`"
           for="profile-hours"
         >
-          <Input
+          <NumberField
             id="profile-hours"
-            v-model.number="weeklyHours"
-            type="number"
-            min="1"
-            max="44"
-            step="0.5"
+            v-model="weeklyHours"
+            :min="1"
+            :max="44"
+            :step="0.5"
+            locale="pt-BR"
             required
-            class="sm:w-32"
+            class="w-full sm:w-40"
           />
         </SettingsRow>
       </SettingsSection>

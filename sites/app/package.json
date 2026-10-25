@@ -16,6 +16,7 @@
     "prepare": "cd ../.. && husky sites/app/.husky"
   },
   "dependencies": {
+    "@internationalized/date": "3.12.4",
     "@lucide/vue": "1.21.0",
     "@tailwindcss/vite": "4.3.3",
     "appwrite": "29.1.0",

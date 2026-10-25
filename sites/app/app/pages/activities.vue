@@ -122,7 +122,7 @@ onMounted(loadActivities);
     />
 
     <form
-      class="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-end"
+      class="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-start"
       @submit.prevent="create"
     >
       <Input
@@ -142,7 +142,9 @@ onMounted(loadActivities);
         :options="priorityOptions"
         class="sm:w-56"
       />
-      <Button type="submit" :icon-leading="Plus" :loading="creating">Adicionar</Button>
+      <Button type="submit" class="sm:mt-7" :icon-leading="Plus" :loading="creating"
+        >Adicionar</Button
+      >
     </form>
     <Alert v-if="createError" intent="danger" variant="soft">{{ createError }}</Alert>
 
@@ -168,7 +170,7 @@ onMounted(loadActivities);
       <li v-for="activity in activities" :key="activity.id" class="px-4 py-3">
         <form
           v-if="editingId === activity.id"
-          class="flex flex-col gap-3 sm:flex-row sm:items-end"
+          class="flex flex-col gap-3 sm:flex-row sm:items-start"
           @submit.prevent="saveEdit"
         >
           <Input
@@ -188,7 +190,7 @@ onMounted(loadActivities);
             :options="priorityOptions"
             class="sm:w-56"
           />
-          <div class="flex gap-2">
+          <div class="flex gap-2 sm:mt-7">
             <Button type="button" variant="ghost" @click="editingId = null">Cancelar</Button>
             <Button type="submit" :loading="savingEdit">Salvar</Button>
           </div>

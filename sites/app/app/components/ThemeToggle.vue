@@ -1,49 +1,37 @@
 <script setup lang="ts">
 import { Monitor, Moon, Sun } from '@lucide/vue';
 import { useColorMode } from '~/composables/useColorMode';
-import { Button } from '~/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '~/ui/toggle';
 
 const { theme, setTheme } = useColorMode();
+const options = [
+  { value: 'light', label: 'Tema claro', icon: Sun },
+  { value: 'dark', label: 'Tema escuro', icon: Moon },
+  { value: 'system', label: 'Tema do sistema', icon: Monitor },
+] as const;
+
+function select(value: unknown) {
+  if (value === 'light' || value === 'dark' || value === 'system') setTheme(value);
+}
 </script>
 
 <template>
-  <div
-    role="group"
+  <ToggleGroup
+    type="single"
+    variant="segmented"
+    size="sm"
     aria-label="Aparência"
-    class="inline-flex gap-0.5 rounded-lg border border-border bg-background p-0.5"
+    :model-value="theme"
+    @update:model-value="select"
   >
-    <Button
-      type="button"
-      :variant="theme === 'light' ? 'secondary' : 'ghost'"
-      size="sm"
-      icon-only
-      :icon-leading="Sun"
-      aria-label="Tema claro"
-      title="Claro"
-      :aria-pressed="theme === 'light'"
-      @click="setTheme('light')"
-    />
-    <Button
-      type="button"
-      :variant="theme === 'dark' ? 'secondary' : 'ghost'"
-      size="sm"
-      icon-only
-      :icon-leading="Moon"
-      aria-label="Tema escuro"
-      title="Escuro"
-      :aria-pressed="theme === 'dark'"
-      @click="setTheme('dark')"
-    />
-    <Button
-      type="button"
-      :variant="theme === 'system' ? 'secondary' : 'ghost'"
-      size="sm"
-      icon-only
-      :icon-leading="Monitor"
-      aria-label="Tema do sistema"
-      title="Sistema"
-      :aria-pressed="theme === 'system'"
-      @click="setTheme('system')"
-    />
-  </div>
+    <ToggleGroupItem
+      v-for="option in options"
+      :key="option.value"
+      :value="option.value"
+      :aria-label="option.label"
+      :title="option.label"
+    >
+      <component :is="option.icon" />
+    </ToggleGroupItem>
+  </ToggleGroup>
 </template>

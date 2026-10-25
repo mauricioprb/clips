@@ -23,16 +23,22 @@ const description = ref('');
 const error = ref('');
 const saving = ref(false);
 const removingId = ref<string | null>(null);
+const shownDay = ref(props.day);
 
-const title = computed(() => (props.day ? formatDayTitle(props.day.date) : ''));
+watch(
+  () => props.day,
+  (day) => day && (shownDay.value = day),
+);
+
+const title = computed(() => (shownDay.value ? formatDayTitle(shownDay.value.date) : ''));
 const subtitle = computed(() => {
-  if (!props.day) return '';
+  if (!shownDay.value) return '';
 
-  if (!props.day.isWorkday) {
-    return `${props.day.holiday ?? 'Fim de semana'}. Este dia não entra no relatório.`;
+  if (!shownDay.value.isWorkday) {
+    return `${shownDay.value.holiday ?? 'Fim de semana'}. Este dia não entra no relatório.`;
   }
 
-  return `${formatDuration(props.day.minutes)} de ${formatDuration(props.dailyTargetMinutes)}`;
+  return `${formatDuration(shownDay.value.minutes)} de ${formatDuration(props.dailyTargetMinutes)}`;
 });
 
 function resetForm() {
@@ -102,7 +108,7 @@ watch(
 <template>
   <Sheet :open="day !== null" @update:open="(open) => !open && emit('close')">
     <SheetContent
-      v-if="day"
+      v-if="shownDay"
       side="right"
       :title="title"
       :description="subtitle"
@@ -114,12 +120,12 @@ watch(
         <p class="text-body-sm text-muted-foreground">{{ subtitle }}</p>
       </div>
 
-      <p v-if="day.entries.length === 0" class="text-body-sm text-muted-foreground">
+      <p v-if="shownDay.entries.length === 0" class="text-body-sm text-muted-foreground">
         Nenhum lançamento neste dia.
       </p>
       <ul v-else class="-mx-2 flex flex-col gap-1">
         <li
-          v-for="entry in day.entries"
+          v-for="entry in shownDay.entries"
           :key="entry.id"
           class="flex items-start gap-3 rounded-md px-2 py-2"
           :class="editing?.id === entry.id ? 'bg-primary-soft' : ''"

@@ -1,23 +1,48 @@
 <script setup lang="ts">
 import { Check, Plus } from '@lucide/vue';
+import { parseDate, type DateValue } from '@internationalized/date';
 import type { EntrySource, MonthDay } from '~/composables/useMonth';
+import { EventCalendarMonthView, type CalendarEvent, type EventColor } from '~/ui/event-calendar';
 
 const props = defineProps<{ days: MonthDay[]; dailyTargetMinutes: number; today: string }>();
 const emit = defineEmits<{ select: [date: string] }>();
 
-const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 const sourceLabels: Record<EntrySource, string> = {
   manual: 'Lançado por você',
   schedule: 'Grade semanal',
   activity: 'Preenchimento automático',
 };
+const sourceChipColors: Record<EntrySource, EventColor> = {
+  manual: 'primary',
+  schedule: 'neutral',
+  activity: 'amber',
+};
 const sourceColors: Record<EntrySource, string> = {
   manual: 'bg-primary',
   schedule: 'bg-muted-foreground',
-  activity: 'bg-warning',
+  activity: 'bg-golden-stone-500',
 };
 
-const weeks = computed(() => calendarWeeks(props.days));
+const anchor = computed(() => parseDate(props.days[0]?.date ?? toIsoDate(new Date())));
+const todayValue = computed(() => parseDate(props.today));
+const daysByDate = computed(() => new Map(props.days.map((day) => [day.date, day])));
+const events = computed<CalendarEvent[]>(() =>
+  props.days.flatMap((day) => {
+    const [year = 1970, month = 1, date = 1] = day.date.split('-').map(Number);
+
+    return day.entries.map((entry) => ({
+      id: entry.id,
+      title: entry.description,
+      start: new Date(year, month - 1, date, 0, entry.startMinute),
+      end: new Date(year, month - 1, date, 0, entry.endMinute - 1),
+      color: sourceChipColors[entry.source],
+    }));
+  }),
+);
+
+function dayAt(value: DateValue): MonthDay {
+  return daysByDate.value.get(value.toString()) as MonthDay;
+}
 const sources = computed(() =>
   (['manual', 'schedule', 'activity'] as const).filter((source) =>
     props.days.some((day) => day.entries.some((entry) => entry.source === source)),
@@ -55,99 +80,45 @@ function label(day: MonthDay): string {
 
 <template>
   <div class="flex flex-col gap-3">
-    <div class="hidden overflow-hidden rounded-xl border border-border md:block">
-      <div class="grid grid-cols-7 border-b border-border">
+    <EventCalendarMonthView
+      :anchor="anchor"
+      :events="events"
+      :today="todayValue"
+      locale="pt-BR"
+      first-day-of-week="mon"
+      :max-visible="2"
+      more-label="a mais"
+      :day-label="(value) => label(dayAt(value))"
+      :day-class="(value) => dayClass(dayAt(value))"
+      class="hidden rounded-xl border border-border md:flex"
+      @day-click="(value) => emit('select', value.toString())"
+    >
+      <template #day-badge="{ day: value }">
         <span
-          v-for="(weekday, index) in weekdayLabels"
-          :key="weekday"
-          class="px-3 py-3 text-caption font-medium text-muted-foreground"
-          :class="index > 4 ? 'bg-muted' : 'bg-card'"
+          v-if="dayAt(value).minutes > 0"
+          class="flex items-center gap-0.5 text-caption font-semibold tabular-nums"
+          :class="hoursClass(dayAt(value))"
+        >
+          <Check v-if="isComplete(dayAt(value))" class="size-3" aria-hidden="true" />
+          {{ formatDuration(dayAt(value).minutes) }}
+        </span>
+      </template>
+      <template #day-content="{ day: value }">
+        <span v-if="dayAt(value).holiday" class="px-1 text-caption text-muted-foreground">
+          {{ dayAt(value).holiday }}
+        </span>
+      </template>
+      <template #day-footer="{ day: value }">
+        <span
+          v-if="!dayAt(value).entries.length && dayAt(value).isWorkday"
+          class="mt-auto flex items-center gap-1 px-1 text-caption text-primary-text transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          :class="value.toString() === today ? 'opacity-100' : 'opacity-0'"
           aria-hidden="true"
         >
-          {{ weekday }}
+          <Plus class="size-3" /> Registrar
         </span>
-      </div>
-      <div
-        v-for="(week, weekIndex) in weeks"
-        :key="weekIndex"
-        class="grid grid-cols-7 border-b border-border last:border-b-0"
-      >
-        <template
-          v-for="(day, dayIndex) in week"
-          :key="day?.date ?? `blank-${weekIndex}-${dayIndex}`"
-        >
-          <button
-            v-if="day"
-            type="button"
-            class="group relative flex min-h-28 min-w-0 cursor-pointer flex-col gap-2 border-r border-border p-2.5 text-left transition-colors last:border-r-0 hover:bg-accent focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            :class="dayClass(day)"
-            :aria-label="label(day)"
-            :aria-current="day.date === today ? 'date' : undefined"
-            @click="emit('select', day.date)"
-          >
-            <span class="flex items-center justify-between gap-2">
-              <span
-                class="grid size-7 place-items-center rounded-md text-caption font-semibold tabular-nums"
-                :class="
-                  day.date === today
-                    ? 'bg-primary text-primary-foreground'
-                    : day.isWorkday
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                "
-              >
-                {{ dayOfMonth(day.date) }}
-              </span>
-              <span
-                v-if="day.minutes > 0"
-                class="flex items-center gap-0.5 text-caption font-semibold tabular-nums"
-                :class="hoursClass(day)"
-              >
-                <Check v-if="isComplete(day)" class="size-3" aria-hidden="true" />
-                {{ formatDuration(day.minutes) }}
-              </span>
-            </span>
-            <span v-if="day.holiday" class="px-0.5 text-caption text-muted-foreground">
-              {{ day.holiday }}
-            </span>
-            <span class="flex min-w-0 flex-col gap-1.5">
-              <span
-                v-for="entry in day.entries.slice(0, 2)"
-                :key="entry.id"
-                class="flex min-w-0 flex-col gap-1 rounded-sm bg-muted px-2 py-1.5 text-caption"
-              >
-                <span class="flex min-w-0 items-center gap-1.5">
-                  <span
-                    class="size-1.5 shrink-0 rounded-full"
-                    :class="sourceColors[entry.source]"
-                    aria-hidden="true"
-                  />
-                  <span class="truncate font-medium text-foreground">{{ entry.description }}</span>
-                </span>
-                <span class="text-muted-foreground tabular-nums">
-                  {{ minutesToClock(entry.startMinute) }} - {{ minutesToClock(entry.endMinute) }}
-                </span>
-              </span>
-              <span
-                v-if="day.entries.length > 2"
-                class="px-1.5 text-caption font-medium text-muted-foreground"
-              >
-                mais {{ day.entries.length - 2 }}
-              </span>
-            </span>
-            <span
-              v-if="!day.entries.length && day.isWorkday"
-              class="mt-auto flex items-center gap-1 text-caption text-primary-text transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-              :class="day.date === today ? 'opacity-100' : 'opacity-0'"
-              aria-hidden="true"
-            >
-              <Plus class="size-3" /> Registrar
-            </span>
-          </button>
-          <span v-else class="border-r border-border bg-muted last:border-r-0" aria-hidden="true" />
-        </template>
-      </div>
-    </div>
+      </template>
+    </EventCalendarMonthView>
 
     <ol class="divide-y divide-border overflow-hidden rounded-xl border border-border md:hidden">
       <li v-for="day in days" :key="day.date">

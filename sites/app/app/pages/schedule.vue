@@ -3,6 +3,7 @@ import { Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import type { WeeklySlot } from '~/composables/useSchedule';
 import { Alert } from '~/ui/alert';
 import { Button } from '~/ui/button';
+import { DatePicker } from '~/ui/date-picker';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,8 @@ const end = ref('10:00');
 const description = ref('');
 const validFrom = ref('');
 const validUntil = ref('');
+const validFromValue = isoDateModel(validFrom);
+const validUntilValue = isoDateModel(validUntil);
 const formError = ref('');
 const saving = ref(false);
 const deleting = ref(false);
@@ -264,13 +267,20 @@ onMounted(loadAll);
             required
           />
           <div class="grid grid-cols-2 gap-3">
-            <Input
+            <DatePicker
               id="slot-from"
-              v-model="validFrom"
+              v-model="validFromValue"
               label="Vale a partir de (opcional)"
-              type="date"
+              date-style="short"
+              clearable
             />
-            <Input id="slot-until" v-model="validUntil" label="Vale até (opcional)" type="date" />
+            <DatePicker
+              id="slot-until"
+              v-model="validUntilValue"
+              label="Vale até (opcional)"
+              date-style="short"
+              clearable
+            />
           </div>
         </form>
         <DialogFooter>

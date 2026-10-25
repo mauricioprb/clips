@@ -1,4 +1,6 @@
+import { parseDate } from '@internationalized/date';
 import { describe, expect, it } from 'vitest';
+import { getMonthMatrix } from '~/ui/event-calendar';
 
 describe('dates', () => {
   it('moves months across year boundaries', () => {
@@ -7,18 +9,16 @@ describe('dates', () => {
     expect(shiftMonth('2026-03', 0)).toBe('2026-03');
   });
 
-  it('starts calendar weeks on Monday and pads both ends', () => {
-    const march = Array.from({ length: 31 }, (_, index) => ({
-      date: `2026-03-${String(index + 1).padStart(2, '0')}`,
-    }));
-    const weeks = calendarWeeks(march);
+  it('builds Monday-first month grids without a trailing empty week', () => {
+    const march = getMonthMatrix(parseDate('2026-03-15'), 'pt-BR', 'mon');
+    const february = getMonthMatrix(parseDate('2021-02-01'), 'pt-BR', 'mon');
 
-    expect(weeks).toHaveLength(6);
-    expect(weeks[0]?.slice(0, 6)).toEqual([null, null, null, null, null, null]);
-    expect(weeks[0]?.[6]).toEqual({ date: '2026-03-01' });
-    expect(weeks[5]?.[1]).toEqual({ date: '2026-03-31' });
-    expect(weeks.every((week) => week.length === 7)).toBe(true);
-    expect(calendarWeeks([])).toEqual([]);
+    expect(march).toHaveLength(6);
+    expect(march[0]?.[0]?.toString()).toBe('2026-02-23');
+    expect(march[0]?.[6]?.toString()).toBe('2026-03-01');
+    expect(march[5]?.[1]?.toString()).toBe('2026-03-31');
+    expect(february).toHaveLength(4);
+    expect(february.flat().every((day) => day.month === 2)).toBe(true);
   });
 
   it('uses ISO weekdays and Portuguese titles without shifting the day', () => {
@@ -27,6 +27,18 @@ describe('dates', () => {
     expect(formatMonthTitle('2026-03')).toBe('Março de 2026');
     expect(formatDayTitle('2026-03-02')).toBe('Segunda-feira, 2 de março');
     expect(toIsoDate(new Date(2026, 11, 31, 23, 59))).toBe('2026-12-31');
+  });
+
+  it('bridges ISO date strings and date picker values', () => {
+    const source = ref('2026-09-20');
+    const model = isoDateModel(source);
+
+    expect(model.value?.toString()).toBe('2026-09-20');
+    model.value = model.value?.add({ days: 1 });
+    expect(source.value).toBe('2026-09-21');
+    model.value = undefined;
+    expect(source.value).toBe('');
+    expect(model.value).toBeUndefined();
   });
 });
 

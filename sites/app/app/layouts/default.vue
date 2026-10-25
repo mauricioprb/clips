@@ -3,11 +3,18 @@ import { NuxtLink } from '#components';
 import { CalendarDays, CalendarRange, ListChecks, LogOut, Settings, Users } from '@lucide/vue';
 import AppShellStacked from '~/ui/app-shell/AppShellStacked.vue';
 import { DropdownMenuItem } from '~/ui/dropdown-menu';
+import { NavbarMobileLink } from '~/ui/navbar';
 import { toast } from '~/ui/toast';
 
 const route = useRoute();
 const { user, access, logout } = useAuth();
 const signingOut = ref(false);
+const menuOpen = ref(false);
+
+watch(
+  () => route.path,
+  () => (menuOpen.value = false),
+);
 
 const navigation = computed(() =>
   [
@@ -37,6 +44,7 @@ async function signOut() {
 
 <template>
   <AppShellStacked
+    v-model:open="menuOpen"
     :navigation="navigation"
     :link-as="NuxtLink"
     :user="user ? { name: user.name || user.email, email: user.email } : undefined"
@@ -54,6 +62,14 @@ async function signOut() {
       <DropdownMenuItem :disabled="signingOut" @select="signOut">
         <LogOut class="size-4" aria-hidden="true" /> Sair
       </DropdownMenuItem>
+    </template>
+    <template #mobile-user-menu>
+      <NavbarMobileLink :as="NuxtLink" href="/settings/security">
+        <Settings aria-hidden="true" /> <span>Conta e senha</span>
+      </NavbarMobileLink>
+      <NavbarMobileLink as="button" type="button" :disabled="signingOut" @click="signOut">
+        <LogOut aria-hidden="true" /> <span>Sair</span>
+      </NavbarMobileLink>
     </template>
     <slot />
   </AppShellStacked>
