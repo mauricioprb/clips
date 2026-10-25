@@ -213,7 +213,7 @@ onMounted(loadMembers);
           <Input id="invite-name" v-model="name" label="Nome completo" :maxlength="128" required />
           <Input id="invite-email" v-model="email" label="E-mail" type="email" required />
           <div class="flex items-start gap-3">
-            <Switch id="invite-admin" v-model="makeAdmin" />
+            <Switch id="invite-admin" v-model="makeAdmin" class="mt-px" />
             <div class="flex flex-col gap-0.5">
               <Label for="invite-admin">Pode convidar e gerenciar usuários</Label>
               <p class="text-caption text-muted-foreground">

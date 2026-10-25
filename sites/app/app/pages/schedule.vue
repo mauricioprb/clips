@@ -266,7 +266,7 @@ onMounted(loadAll);
             :maxlength="255"
             required
           />
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 items-end gap-3">
             <DatePicker
               id="slot-from"
               v-model="validFromValue"

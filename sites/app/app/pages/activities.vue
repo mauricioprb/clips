@@ -135,16 +135,16 @@ onMounted(loadActivities);
         required
         class="min-w-0 flex-1"
       />
-      <Select
-        id="new-activity-priority"
-        v-model="priority"
-        label="Prioridade"
-        :options="priorityOptions"
-        class="sm:w-56"
-      />
-      <Button type="submit" class="sm:mt-7" :icon-leading="Plus" :loading="creating"
-        >Adicionar</Button
-      >
+      <div class="flex items-end gap-3">
+        <Select
+          id="new-activity-priority"
+          v-model="priority"
+          label="Prioridade"
+          :options="priorityOptions"
+          class="min-w-0 flex-1 sm:w-56"
+        />
+        <Button type="submit" :icon-leading="Plus" :loading="creating">Adicionar</Button>
+      </div>
     </form>
     <Alert v-if="createError" intent="danger" variant="soft">{{ createError }}</Alert>
 
@@ -183,14 +183,14 @@ onMounted(loadActivities);
             class="min-w-0 flex-1"
             @keydown.esc="editingId = null"
           />
-          <Select
-            :id="`edit-priority-${activity.id}`"
-            v-model="editPriority"
-            label="Prioridade"
-            :options="priorityOptions"
-            class="sm:w-56"
-          />
-          <div class="flex gap-2 sm:mt-7">
+          <div class="flex flex-wrap items-end gap-2">
+            <Select
+              :id="`edit-priority-${activity.id}`"
+              v-model="editPriority"
+              label="Prioridade"
+              :options="priorityOptions"
+              class="min-w-0 flex-1 sm:w-56"
+            />
             <Button type="button" variant="ghost" @click="editingId = null">Cancelar</Button>
             <Button type="submit" :loading="savingEdit">Salvar</Button>
           </div>
