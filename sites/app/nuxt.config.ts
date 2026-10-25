@@ -17,6 +17,10 @@ export default defineNuxtConfig({
     head: {
       title: 'Clips',
       htmlAttrs: { lang: 'pt-BR' },
+      link: [
+        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+        { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+      ],
       script: [
         {
           innerHTML:
