@@ -66,7 +66,7 @@ appwrite teams create-membership --team-id clips --roles owner --user-id <id-mos
 appwrite push function --function-id timesheet --activate --force
 ```
 
-**Para ir ao ar:** pull request para a `main`. A `main` só aceita merge com o CI verde, e o merge publica no `clips-prod`.
+**Para ir ao ar:** pull request para a `main`. O merge publica no `clips-prod`, depois das conferências do CI. O hook do `git push` recusa push direto na `main`.
 
 As configurações de autenticação (`appwrite push settings`), a política de privacidade da equipe, o SMTP e os modelos de e-mail não passam pelo pipeline. Elas são aplicadas à mão, nos dois projetos, sempre que essa parte mudar ([Configurar a publicação](https://docs.overclk.tech/guia/configurar-publicacao)). A política de privacidade impede que bolsistas vejam o nome e o e-mail dos colegas pela API de equipes ([decisão 0002](docs/decisions/0002-convite-pela-equipe-do-appwrite.md)):
 

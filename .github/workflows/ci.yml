@@ -67,36 +67,43 @@ jobs:
       (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     needs: [functions, site, agents]
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
-      url: ${{ vars.SITE_URL }}
-    concurrency: deploy-${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
+    concurrency: deploy-${{ github.event_name == 'workflow_dispatch' && 'dev' || 'prod' }}
     env:
-      ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
-      APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
-      APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID }}
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && 'dev' || 'prod' }}
+      APPWRITE_ENDPOINT: https://overmaker.overclk.tech/v1
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: sites/app/.nvmrc
-      - name: Projeto
-        run: |
-          case "$ENVIRONMENT:$APPWRITE_PROJECT_ID" in
-            production:*-prod | development:*-dev) ;;
-            *)
-              echo "::error::O ambiente $ENVIRONMENT aponta para o projeto '$APPWRITE_PROJECT_ID'. Ele precisa terminar em -prod (production) ou -dev (development)."
-              exit 1
-              ;;
-          esac
-          jq --arg id "$APPWRITE_PROJECT_ID" '.projectId = $id' appwrite.config.json > appwrite.deploy.json
-          mv appwrite.deploy.json appwrite.config.json
-          echo "Publicando $GITHUB_REF_NAME em $APPWRITE_PROJECT_ID"
-
       - run: npm install --global appwrite-cli@28.9.0
-      - run: appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$APPWRITE_API_KEY"
+
+      - name: Projeto
         env:
-          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          KEY_DEV: ${{ secrets.APPWRITE_API_KEY_DEV }}
+          KEY_PROD: ${{ secrets.APPWRITE_API_KEY_PROD }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          dev=$(jq -r .projectId appwrite.config.json)
+          case "$dev" in
+            *-dev) ;;
+            *) echo "::error::O projectId do appwrite.config.json ('$dev') precisa terminar em -dev."; exit 1 ;;
+          esac
+          if [ "$TARGET" = prod ]; then
+            project="${dev%-dev}-prod" key="$KEY_PROD" site="$SITE_URL"
+          else
+            project="$dev" key="$KEY_DEV" site="https://$dev.app.overclk.tech"
+          fi
+          if [ -z "$key" ] || [ -z "$site" ]; then
+            echo "::error::Falta o segredo APPWRITE_API_KEY_${TARGET^^} ou a variável SITE_URL no repositório."
+            exit 1
+          fi
+          jq --arg id "$project" '.projectId = $id' appwrite.config.json > appwrite.deploy.json
+          mv appwrite.deploy.json appwrite.config.json
+          appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$key"
+          echo "PROJECT=$project" >> "$GITHUB_ENV"
+          echo "SITE=$site" >> "$GITHUB_ENV"
+          echo "Publicando $GITHUB_REF_NAME em $project ($site)"
 
       - name: Esquema
         run: |
@@ -111,8 +118,8 @@ jobs:
       - name: Site
         run: |
           printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
-            "$APPWRITE_ENDPOINT" "$APPWRITE_PROJECT_ID" > sites/app/.env
+            "$APPWRITE_ENDPOINT" "$PROJECT" > sites/app/.env
           appwrite push site --all --activate --with-variables --force
 
       - name: Teste de fumaça
-        run: curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 10 "${{ vars.SITE_URL }}/login"
+        run: curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 10 "$SITE/login"
