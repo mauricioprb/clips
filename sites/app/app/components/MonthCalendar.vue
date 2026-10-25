@@ -2,6 +2,7 @@
 import { Check, Plus } from '@lucide/vue';
 import { parseDate, type DateValue } from '@internationalized/date';
 import type { EntrySource, MonthDay } from '~/composables/useMonth';
+import { Badge } from '~/ui/badge';
 import { EventCalendarMonthView, type CalendarEvent, type EventColor } from '~/ui/event-calendar';
 
 const props = defineProps<{ days: MonthDay[]; dailyTargetMinutes: number; today: string }>();
@@ -69,6 +70,7 @@ function label(day: MonthDay): string {
   return [
     `Abrir ${formatDayTitle(day.date)}`,
     day.holiday,
+    day.isWorkday ? null : 'não entra no relatório',
     formatDuration(day.minutes),
     isComplete(day) ? 'dia completo' : null,
     ...day.entries.map((entry) => `${entry.description}, ${sourceLabels[entry.source]}`),
@@ -104,8 +106,16 @@ function label(day: MonthDay): string {
         </span>
       </template>
       <template #day-content="{ day: value }">
-        <span v-if="dayAt(value).holiday" class="px-1 text-caption text-muted-foreground">
-          {{ dayAt(value).holiday }}
+        <Badge
+          v-if="dayAt(value).holiday"
+          intent="violet"
+          size="sm"
+          class="mx-1 max-w-full self-start"
+        >
+          <span class="truncate">{{ dayAt(value).holiday }}</span>
+        </Badge>
+        <span v-else-if="!dayAt(value).isWorkday" class="px-1 text-caption text-muted-foreground">
+          Fim de semana
         </span>
       </template>
       <template #day-footer="{ day: value }">
@@ -150,9 +160,9 @@ function label(day: MonthDay): string {
             >
               {{ day.isWorkday ? 'Sem registros' : 'Fim de semana' }}
             </span>
-            <span v-if="day.holiday" class="truncate text-caption text-muted-foreground">
-              {{ day.holiday }}
-            </span>
+            <Badge v-if="day.holiday" intent="violet" size="sm" class="max-w-full self-start">
+              <span class="truncate">{{ day.holiday }}</span>
+            </Badge>
             <span
               v-for="entry in day.entries.slice(0, 2)"
               :key="entry.id"
@@ -188,10 +198,7 @@ function label(day: MonthDay): string {
       </li>
     </ol>
 
-    <ul
-      v-if="sources.length"
-      class="flex flex-wrap gap-x-5 gap-y-2 text-caption text-muted-foreground"
-    >
+    <ul class="flex flex-wrap gap-x-5 gap-y-2 text-caption text-muted-foreground">
       <li v-for="source in sources" :key="source" class="flex items-center gap-1.5">
         <span
           class="size-1.5 shrink-0 rounded-full"
@@ -199,6 +206,10 @@ function label(day: MonthDay): string {
           aria-hidden="true"
         />
         {{ sourceLabels[source] }}
+      </li>
+      <li class="flex items-center gap-1.5">
+        <span class="size-3 shrink-0 rounded-sm bg-muted ring-1 ring-border" aria-hidden="true" />
+        Fim de semana e feriado não entram no relatório
       </li>
     </ul>
   </div>

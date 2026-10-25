@@ -21,6 +21,7 @@ function select(value: unknown) {
     variant="segmented"
     size="sm"
     aria-label="Aparência"
+    class="gap-0.5 p-0.5"
     :model-value="theme"
     @update:model-value="select"
   >
@@ -30,6 +31,7 @@ function select(value: unknown) {
       :value="option.value"
       :aria-label="option.label"
       :title="option.label"
+      class="h-7 min-w-7 px-1.5 [&_svg]:size-3.5"
     >
       <component :is="option.icon" />
     </ToggleGroupItem>

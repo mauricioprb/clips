@@ -105,39 +105,34 @@ watch(year, loadYear, { immediate: true });
       title="Seus feriados"
       description="Estaduais e municipais que valem na sua instituição. Os nacionais já estão incluídos."
     >
-      <div class="flex flex-col gap-3 px-5 py-5 sm:px-6">
-        <form class="flex flex-col gap-3 sm:flex-row sm:items-start" @submit.prevent="submit">
-          <Input
-            id="holiday-name"
-            v-model="name"
-            label="Nome"
-            placeholder="Ex.: Aniversário da cidade"
-            :maxlength="120"
-            required
-            class="min-w-0 flex-1"
-          />
-          <Select
-            id="holiday-recurrence"
-            v-model="recurrence"
-            label="Repetição"
-            :options="recurrenceOptions"
-            class="sm:w-60"
-          />
-          <DatePicker
-            v-if="recurrence !== 'corpus_christi'"
-            id="holiday-date"
-            v-model="dateValue"
-            label="Data"
-            date-style="short"
-            required
-            class="sm:w-44"
-          />
-          <Button type="submit" class="sm:mt-7" :icon-leading="Plus" :loading="saving"
-            >Adicionar</Button
-          >
-        </form>
+      <form class="flex flex-col gap-4 px-5 py-5 sm:px-6" @submit.prevent="submit">
         <Alert v-if="formError" intent="danger" variant="soft">{{ formError }}</Alert>
-      </div>
+        <Input
+          id="holiday-name"
+          v-model="name"
+          label="Nome"
+          placeholder="Ex.: Aniversário da cidade"
+          :maxlength="120"
+          required
+        />
+        <Select
+          id="holiday-recurrence"
+          v-model="recurrence"
+          label="Repetição"
+          :options="recurrenceOptions"
+        />
+        <DatePicker
+          v-if="recurrence !== 'corpus_christi'"
+          id="holiday-date"
+          v-model="dateValue"
+          label="Data"
+          date-style="short"
+          required
+        />
+        <Button type="submit" class="self-start" :icon-leading="Plus" :loading="saving">
+          Adicionar
+        </Button>
+      </form>
 
       <p
         v-if="list && !list.holidays.length"

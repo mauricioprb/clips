@@ -32,7 +32,7 @@ function fillForm() {
   advisorName.value = profile.value?.advisorName ?? '';
   scholarshipName.value = profile.value?.scholarshipName ?? '';
   laboratories.value = [...(profile.value?.laboratories ?? [])];
-  weeklyHours.value = (profile.value?.weeklyWorkloadMinutes ?? 1200) / 60;
+  weeklyHours.value = Math.round((profile.value?.weeklyWorkloadMinutes ?? 1200) / 60);
 }
 
 async function submit() {
@@ -167,7 +167,7 @@ onMounted(loadProfile);
             v-model="weeklyHours"
             :min="1"
             :max="44"
-            :step="0.5"
+            :format-options="{ maximumFractionDigits: 0 }"
             locale="pt-BR"
             required
             class="w-full sm:w-40"
