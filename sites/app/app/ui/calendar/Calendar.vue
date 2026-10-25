@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, type HTMLAttributes } from 'vue';
+import { computed, ref, watch, type HTMLAttributes } from 'vue';
 import {
   CalendarRoot,
   CalendarHeader,
-  CalendarHeading,
   CalendarPrev,
   CalendarNext,
   CalendarGrid,
@@ -41,6 +40,8 @@ interface Props {
   isDateMarked?: Matcher;
   prevLabel?: string;
   nextLabel?: string;
+  monthLabel?: string;
+  yearLabel?: string;
   showInput?: boolean;
   todayButton?: boolean;
   inputPlaceholder?: string;
@@ -54,6 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   fixedWeeks: true,
   prevLabel: () => useFuseLocale().calendar.prevLabel,
   nextLabel: () => useFuseLocale().calendar.nextLabel,
+  monthLabel: () => useFuseLocale().calendar.monthLabel,
+  yearLabel: () => useFuseLocale().calendar.yearLabel,
   showInput: false,
   todayButton: false,
   inputPlaceholder: () => useFuseLocale().calendar.inputPlaceholder,
@@ -94,6 +97,30 @@ function commitInput() {
   dateText.value = formatInput(model.value);
 }
 
+const monthNames = computed(() => {
+  const formatter = new Intl.DateTimeFormat(props.locale ?? 'en', {
+    month: 'long',
+    timeZone: 'UTC',
+  });
+  return Array.from({ length: 12 }, (_, index) => {
+    const name = formatter.format(new Date(Date.UTC(2000, index, 1)));
+    return name.charAt(0).toLocaleUpperCase(props.locale) + name.slice(1);
+  });
+});
+
+function years(shown: number) {
+  const current = today(getLocalTimeZone()).year;
+  const first = Math.min(props.minValue?.year ?? current - 100, shown);
+  const last = Math.max(props.maxValue?.year ?? current + 10, shown);
+  return Array.from({ length: last - first + 1 }, (_, index) => last - index);
+}
+
+function show(date: DateValue, unit: 'month' | 'year', event: Event) {
+  placeholder.value = date.set({
+    [unit]: Number((event.target as HTMLSelectElement).value),
+  });
+}
+
 function goToday() {
   const date = today(getLocalTimeZone());
   model.value = date;
@@ -103,7 +130,7 @@ function goToday() {
 
 <template>
   <CalendarRoot
-    v-slot="{ grid, weekDays }"
+    v-slot="{ grid, weekDays, date }"
     v-model="model"
     v-model:placeholder="placeholder"
     :week-starts-on="weekStartsOn"
@@ -129,9 +156,30 @@ function goToday() {
       >
         <ChevronLeft class="size-4" />
       </CalendarPrev>
-      <CalendarHeading
-        class="flex-1 text-center text-body-md font-semibold text-foreground first-letter:uppercase"
-      />
+      <div class="flex flex-1 items-center justify-center gap-1">
+        <select
+          :aria-label="monthLabel"
+          :value="date.month"
+          :disabled="disabled"
+          class="h-8 cursor-pointer rounded-md bg-transparent px-1.5 text-body-md font-semibold text-foreground transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
+          @change="show(date, 'month', $event)"
+        >
+          <option v-for="(name, index) in monthNames" :key="name" :value="index + 1">
+            {{ name }}
+          </option>
+        </select>
+        <select
+          :aria-label="yearLabel"
+          :value="date.year"
+          :disabled="disabled"
+          class="h-8 cursor-pointer rounded-md bg-transparent px-1.5 text-body-md font-semibold text-foreground tabular-nums transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
+          @change="show(date, 'year', $event)"
+        >
+          <option v-for="year in years(date.year)" :key="year" :value="year">
+            {{ year }}
+          </option>
+        </select>
+      </div>
       <CalendarNext
         :aria-label="nextLabel"
         class="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
