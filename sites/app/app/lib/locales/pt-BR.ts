@@ -84,8 +84,11 @@ export const ptBR: FuseLocale = {
   calendar: {
     prevLabel: 'Mês anterior',
     nextLabel: 'Próximo mês',
-    monthLabel: 'Mês',
-    yearLabel: 'Ano',
+    viewLabel: 'Escolher mês e ano',
+    prevYearLabel: 'Ano anterior',
+    nextYearLabel: 'Próximo ano',
+    prevYearsLabel: 'Anos anteriores',
+    nextYearsLabel: 'Próximos anos',
     inputPlaceholder: 'DD/MM/AAAA',
     todayLabel: 'Hoje',
   },

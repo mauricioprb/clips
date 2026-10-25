@@ -82,8 +82,11 @@ export const en = {
   calendar: {
     prevLabel: 'Previous month',
     nextLabel: 'Next month',
-    monthLabel: 'Month',
-    yearLabel: 'Year',
+    viewLabel: 'Choose month and year',
+    prevYearLabel: 'Previous year',
+    nextYearLabel: 'Next year',
+    prevYearsLabel: 'Previous years',
+    nextYearsLabel: 'Next years',
     inputPlaceholder: 'DD/MM/YYYY',
     todayLabel: 'Today',
   },

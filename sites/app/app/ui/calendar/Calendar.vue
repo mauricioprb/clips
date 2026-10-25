@@ -14,7 +14,7 @@ import {
   CalendarCellTrigger,
   type DateValue,
 } from 'reka-ui';
-import { ChevronLeft, ChevronRight } from '@lucide/vue';
+import { ChevronDown, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import { cn } from '@/lib/utils';
 import { calendarCellTriggerVariants } from '.';
@@ -40,8 +40,11 @@ interface Props {
   isDateMarked?: Matcher;
   prevLabel?: string;
   nextLabel?: string;
-  monthLabel?: string;
-  yearLabel?: string;
+  viewLabel?: string;
+  prevYearLabel?: string;
+  nextYearLabel?: string;
+  prevYearsLabel?: string;
+  nextYearsLabel?: string;
   showInput?: boolean;
   todayButton?: boolean;
   inputPlaceholder?: string;
@@ -55,8 +58,11 @@ const props = withDefaults(defineProps<Props>(), {
   fixedWeeks: true,
   prevLabel: () => useFuseLocale().calendar.prevLabel,
   nextLabel: () => useFuseLocale().calendar.nextLabel,
-  monthLabel: () => useFuseLocale().calendar.monthLabel,
-  yearLabel: () => useFuseLocale().calendar.yearLabel,
+  viewLabel: () => useFuseLocale().calendar.viewLabel,
+  prevYearLabel: () => useFuseLocale().calendar.prevYearLabel,
+  nextYearLabel: () => useFuseLocale().calendar.nextYearLabel,
+  prevYearsLabel: () => useFuseLocale().calendar.prevYearsLabel,
+  nextYearsLabel: () => useFuseLocale().calendar.nextYearsLabel,
   showInput: false,
   todayButton: false,
   inputPlaceholder: () => useFuseLocale().calendar.inputPlaceholder,
@@ -97,29 +103,76 @@ function commitInput() {
   dateText.value = formatInput(model.value);
 }
 
+type View = 'days' | 'months' | 'years';
+
+const view = ref<View>('days');
+const pageStart = ref(0);
+const thisMonth = today(getLocalTimeZone());
+
 const monthNames = computed(() => {
   const formatter = new Intl.DateTimeFormat(props.locale ?? 'en', {
-    month: 'long',
+    month: 'short',
     timeZone: 'UTC',
   });
   return Array.from({ length: 12 }, (_, index) => {
-    const name = formatter.format(new Date(Date.UTC(2000, index, 1)));
+    const name = formatter.format(new Date(Date.UTC(2000, index, 1))).replace(/\.$/, '');
     return name.charAt(0).toLocaleUpperCase(props.locale) + name.slice(1);
   });
 });
 
-function years(shown: number) {
-  const current = today(getLocalTimeZone()).year;
-  const first = Math.min(props.minValue?.year ?? current - 100, shown);
-  const last = Math.max(props.maxValue?.year ?? current + 10, shown);
-  return Array.from({ length: last - first + 1 }, (_, index) => last - index);
+const years = computed(() => Array.from({ length: 12 }, (_, index) => pageStart.value + index));
+
+function heading(date: DateValue) {
+  if (view.value === 'years') return `${pageStart.value} – ${pageStart.value + 11}`;
+  if (view.value === 'months') return String(date.year);
+  const text = new Intl.DateTimeFormat(props.locale ?? 'en', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(date.year, date.month - 1, 1)));
+  return text.charAt(0).toLocaleUpperCase(props.locale) + text.slice(1);
 }
 
-function show(date: DateValue, unit: 'month' | 'year', event: Event) {
-  placeholder.value = date.set({
-    [unit]: Number((event.target as HTMLSelectElement).value),
-  });
+function toggleView(date: DateValue) {
+  if (view.value === 'days') {
+    view.value = 'months';
+  } else if (view.value === 'months') {
+    pageStart.value = date.year - (date.year % 12);
+    view.value = 'years';
+  } else {
+    view.value = 'days';
+  }
 }
+
+function step(date: DateValue, direction: 1 | -1) {
+  if (view.value === 'years') pageStart.value += 12 * direction;
+  else placeholder.value = date.add({ years: direction });
+}
+
+function pickMonth(date: DateValue, month: number) {
+  placeholder.value = date.set({ month });
+  view.value = 'days';
+}
+
+function pickYear(date: DateValue, year: number) {
+  placeholder.value = date.set({ year });
+  view.value = 'months';
+}
+
+const outOfRange = (year: number, month?: number) => {
+  const key = (y: number, m: number) => y * 12 + m;
+  const first = key(year, month ?? 1);
+  const last = key(year, month ?? 12);
+  return (
+    (!!props.minValue && last < key(props.minValue.year, props.minValue.month)) ||
+    (!!props.maxValue && first > key(props.maxValue.year, props.maxValue.month))
+  );
+};
+
+const navClass =
+  'inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50';
+
+const pickerCellClass = cn(calendarCellTriggerVariants(), 'h-9 w-full');
 
 function goToday() {
   const date = today(getLocalTimeZone());
@@ -150,45 +203,85 @@ function goToday() {
     :class="cn('flex w-fit flex-col gap-4', props.class)"
   >
     <CalendarHeader class="flex items-center justify-between gap-2">
-      <CalendarPrev
-        :aria-label="prevLabel"
-        class="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-      >
+      <CalendarPrev v-if="view === 'days'" :aria-label="prevLabel" :class="navClass">
         <ChevronLeft class="size-4" />
       </CalendarPrev>
-      <div class="flex flex-1 items-center justify-center gap-1">
-        <select
-          :aria-label="monthLabel"
-          :value="date.month"
-          :disabled="disabled"
-          class="h-8 cursor-pointer rounded-md bg-transparent px-1.5 text-body-md font-semibold text-foreground transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
-          @change="show(date, 'month', $event)"
-        >
-          <option v-for="(name, index) in monthNames" :key="name" :value="index + 1">
-            {{ name }}
-          </option>
-        </select>
-        <select
-          :aria-label="yearLabel"
-          :value="date.year"
-          :disabled="disabled"
-          class="h-8 cursor-pointer rounded-md bg-transparent px-1.5 text-body-md font-semibold text-foreground tabular-nums transition-colors outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50"
-          @change="show(date, 'year', $event)"
-        >
-          <option v-for="year in years(date.year)" :key="year" :value="year">
-            {{ year }}
-          </option>
-        </select>
-      </div>
-      <CalendarNext
-        :aria-label="nextLabel"
-        class="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+      <button
+        v-else
+        type="button"
+        :aria-label="view === 'months' ? prevYearLabel : prevYearsLabel"
+        :class="navClass"
+        @click="step(date, -1)"
       >
+        <ChevronLeft class="size-4" />
+      </button>
+      <button
+        type="button"
+        :aria-label="viewLabel"
+        :aria-expanded="view !== 'days'"
+        :disabled="disabled"
+        class="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md px-2 text-body-md font-semibold text-foreground tabular-nums transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+        @click="toggleView(date)"
+      >
+        <span aria-live="polite">{{ heading(date) }}</span>
+        <ChevronDown
+          class="size-4 text-muted-foreground transition-transform"
+          :class="view !== 'days' && 'rotate-180'"
+        />
+      </button>
+      <CalendarNext v-if="view === 'days'" :aria-label="nextLabel" :class="navClass">
         <ChevronRight class="size-4" />
       </CalendarNext>
+      <button
+        v-else
+        type="button"
+        :aria-label="view === 'months' ? nextYearLabel : nextYearsLabel"
+        :class="navClass"
+        @click="step(date, 1)"
+      >
+        <ChevronRight class="size-4" />
+      </button>
     </CalendarHeader>
 
-    <div v-if="showInput || todayButton" class="flex items-center gap-2">
+    <div
+      v-if="view === 'months'"
+      class="grid h-64 w-63 grid-cols-3 grid-rows-4 items-center gap-x-2"
+    >
+      <button
+        v-for="(name, index) in monthNames"
+        :key="name"
+        type="button"
+        :class="pickerCellClass"
+        :data-selected="date.month === index + 1 || undefined"
+        :data-today="(thisMonth.year === date.year && thisMonth.month === index + 1) || undefined"
+        :data-disabled="outOfRange(date.year, index + 1) || undefined"
+        :aria-pressed="date.month === index + 1"
+        @click="pickMonth(date, index + 1)"
+      >
+        {{ name }}
+      </button>
+    </div>
+
+    <div
+      v-else-if="view === 'years'"
+      class="grid h-64 w-63 grid-cols-3 grid-rows-4 items-center gap-x-2"
+    >
+      <button
+        v-for="year in years"
+        :key="year"
+        type="button"
+        :class="pickerCellClass"
+        :data-selected="date.year === year || undefined"
+        :data-today="thisMonth.year === year || undefined"
+        :data-disabled="outOfRange(year) || undefined"
+        :aria-pressed="date.year === year"
+        @click="pickYear(date, year)"
+      >
+        {{ year }}
+      </button>
+    </div>
+
+    <div v-if="view === 'days' && (showInput || todayButton)" class="flex items-center gap-2">
       <input
         v-if="showInput"
         v-model="dateText"
@@ -208,7 +301,7 @@ function goToday() {
       </button>
     </div>
 
-    <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
+    <div v-if="view === 'days'" class="flex flex-col gap-4 sm:flex-row sm:gap-6">
       <CalendarGrid
         v-for="month in grid"
         :key="month.value.toString()"
