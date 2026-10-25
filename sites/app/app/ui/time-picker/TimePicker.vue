@@ -199,7 +199,7 @@ const fadeMask = {
         align="end"
         @open-auto-focus="focusSelected"
       >
-        <ScrollArea class="max-h-64" :viewport-style="fadeMask">
+        <ScrollArea viewport-class="max-h-64" :viewport-style="fadeMask">
           <div ref="list" class="flex flex-col gap-1 p-2">
             <button
               v-for="minutes in slots"
