@@ -99,41 +99,50 @@ watch(year, loadYear, { immediate: true });
       title="Seus feriados"
       description="Estaduais e municipais que valem na sua instituição. Os nacionais já estão incluídos."
     >
-      <form class="flex flex-col gap-3 sm:flex-row sm:items-end" @submit.prevent="submit">
-        <Input
-          id="holiday-name"
-          v-model="name"
-          label="Nome"
-          placeholder="Ex.: Aniversário da cidade"
-          :maxlength="120"
-          required
-          class="min-w-0 flex-1"
-        />
-        <Select
-          id="holiday-recurrence"
-          v-model="recurrence"
-          label="Repetição"
-          :options="recurrenceOptions"
-          class="sm:w-60"
-        />
-        <Input
-          v-if="recurrence !== 'corpus_christi'"
-          id="holiday-date"
-          v-model="date"
-          label="Data"
-          type="date"
-          required
-          class="sm:w-44"
-        />
-        <Button type="submit" :icon-leading="Plus" :loading="saving">Adicionar</Button>
-      </form>
-      <Alert v-if="formError" intent="danger" variant="soft">{{ formError }}</Alert>
+      <div class="flex flex-col gap-3 px-5 py-5 sm:px-6">
+        <form class="flex flex-col gap-3 sm:flex-row sm:items-end" @submit.prevent="submit">
+          <Input
+            id="holiday-name"
+            v-model="name"
+            label="Nome"
+            placeholder="Ex.: Aniversário da cidade"
+            :maxlength="120"
+            required
+            class="min-w-0 flex-1"
+          />
+          <Select
+            id="holiday-recurrence"
+            v-model="recurrence"
+            label="Repetição"
+            :options="recurrenceOptions"
+            class="sm:w-60"
+          />
+          <Input
+            v-if="recurrence !== 'corpus_christi'"
+            id="holiday-date"
+            v-model="date"
+            label="Data"
+            type="date"
+            required
+            class="sm:w-44"
+          />
+          <Button type="submit" :icon-leading="Plus" :loading="saving">Adicionar</Button>
+        </form>
+        <Alert v-if="formError" intent="danger" variant="soft">{{ formError }}</Alert>
+      </div>
 
-      <p v-if="list && !list.holidays.length" class="text-body-sm text-muted-foreground">
+      <p
+        v-if="list && !list.holidays.length"
+        class="px-5 py-5 text-body-sm text-muted-foreground sm:px-6"
+      >
         Nenhum feriado próprio.
       </p>
       <ul v-else-if="list" class="divide-y divide-border">
-        <li v-for="holiday in list.holidays" :key="holiday.id" class="flex items-center gap-3 py-2">
+        <li
+          v-for="holiday in list.holidays"
+          :key="holiday.id"
+          class="flex items-center gap-3 px-5 py-2 sm:px-6"
+        >
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body-sm font-medium wrap-anywhere">{{ holiday.name }}</span>
             <span class="text-caption text-muted-foreground">{{ describe(holiday) }}</span>
@@ -158,7 +167,7 @@ watch(year, loadYear, { immediate: true });
       :title="`Feriados de ${year}`"
       description="Nacionais e os seus, já considerados no calendário."
     >
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 px-5 py-3 sm:px-6">
         <Button
           type="button"
           variant="ghost"
@@ -179,13 +188,13 @@ watch(year, loadYear, { immediate: true });
           @click="year++"
         />
       </div>
-      <div v-if="loadError" class="flex flex-col items-start gap-4">
+      <div v-if="loadError" class="flex flex-col items-start gap-4 px-5 py-5 sm:px-6">
         <Alert intent="danger" variant="soft">{{ loadError }}</Alert>
         <Button type="button" variant="outline" :icon-leading="RefreshCw" @click="loadYear">
           Tentar novamente
         </Button>
       </div>
-      <div v-else-if="loading" role="status" class="flex flex-col gap-2">
+      <div v-else-if="loading" role="status" class="flex flex-col gap-2 px-5 py-5 sm:px-6">
         <span class="sr-only">Carregando os feriados…</span>
         <Skeleton class="h-5 w-3/5" /><Skeleton class="h-5 w-2/5" />
       </div>
@@ -193,7 +202,7 @@ watch(year, loadYear, { immediate: true });
         <li
           v-for="holiday in list.calendar"
           :key="holiday.date"
-          class="flex gap-4 py-2 text-body-sm"
+          class="flex gap-4 px-5 py-2 text-body-sm sm:px-6"
         >
           <span class="w-24 shrink-0 text-muted-foreground tabular-nums">
             {{ formatDate(holiday.date) }}
