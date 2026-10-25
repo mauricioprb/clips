@@ -19,6 +19,7 @@ defineProps<{ setup: { profile: boolean; schedule: boolean; activities: boolean 
         :to="setup.profile ? '/activities' : '/settings/profile'"
         variant="outline"
         size="sm"
+        class="border-current text-current hover:border-current hover:bg-current/10 active:bg-current/20"
       >
         {{ setup.profile ? 'Cadastrar atividades' : 'Preencher dados da bolsa' }}
       </Button>

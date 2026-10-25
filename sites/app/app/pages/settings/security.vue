@@ -88,7 +88,7 @@ async function deleteAccount() {
       title="E-mail"
       description="É o e-mail usado para entrar e para recuperar a senha."
     >
-      <form class="flex max-w-md flex-col gap-4" @submit.prevent="saveEmail">
+      <form class="flex max-w-md flex-col gap-4 px-5 py-5 sm:px-6" @submit.prevent="saveEmail">
         <Alert v-if="emailError" intent="danger" variant="soft">{{ emailError }}</Alert>
         <Input
           id="account-email"
@@ -111,7 +111,7 @@ async function deleteAccount() {
     </SettingsSection>
 
     <SettingsSection title="Senha" description="Informe a senha atual para definir uma nova.">
-      <form class="flex max-w-md flex-col gap-4" @submit.prevent="savePassword">
+      <form class="flex max-w-md flex-col gap-4 px-5 py-5 sm:px-6" @submit.prevent="savePassword">
         <Alert v-if="passwordError" intent="danger" variant="soft">{{ passwordError }}</Alert>
         <Input
           id="current-password"
@@ -148,9 +148,9 @@ async function deleteAccount() {
       title="Excluir conta"
       description="Apaga a sua conta e todos os lançamentos. Não é possível desfazer."
     >
-      <Button type="button" tone="danger" class="self-start" @click="confirmDelete = true">
-        Excluir conta
-      </Button>
+      <div class="px-5 py-5 sm:px-6">
+        <Button type="button" tone="danger" @click="confirmDelete = true">Excluir conta</Button>
+      </div>
     </SettingsSection>
 
     <ConfirmDialog
