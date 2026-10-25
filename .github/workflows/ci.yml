@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   functions:
@@ -60,20 +61,38 @@ jobs:
           fi
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     needs: [functions, site, agents]
     runs-on: ubuntu-latest
     environment:
-      name: production
+      name: ${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
       url: ${{ vars.SITE_URL }}
-    concurrency: deploy-production
+    concurrency: deploy-${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
     env:
+      ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && 'development' || 'production' }}
       APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT }}
+      APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: sites/app/.nvmrc
+      - name: Projeto
+        run: |
+          case "$ENVIRONMENT:$APPWRITE_PROJECT_ID" in
+            production:*-prod | development:*-dev) ;;
+            *)
+              echo "::error::O ambiente $ENVIRONMENT aponta para o projeto '$APPWRITE_PROJECT_ID'. Ele precisa terminar em -prod (production) ou -dev (development)."
+              exit 1
+              ;;
+          esac
+          jq --arg id "$APPWRITE_PROJECT_ID" '.projectId = $id' appwrite.config.json > appwrite.deploy.json
+          mv appwrite.deploy.json appwrite.config.json
+          echo "Publicando $GITHUB_REF_NAME em $APPWRITE_PROJECT_ID"
+
       - run: npm install --global appwrite-cli@28.9.0
       - run: appwrite client --endpoint "$APPWRITE_ENDPOINT" --key "$APPWRITE_API_KEY"
         env:
@@ -92,7 +111,7 @@ jobs:
       - name: Site
         run: |
           printf 'NUXT_PUBLIC_APPWRITE_ENDPOINT=%s\nNUXT_PUBLIC_APPWRITE_PROJECT_ID=%s\n' \
-            "$APPWRITE_ENDPOINT" "$(jq -r .projectId appwrite.config.json)" > sites/app/.env
+            "$APPWRITE_ENDPOINT" "$APPWRITE_PROJECT_ID" > sites/app/.env
           appwrite push site --all --activate --with-variables --force
 
       - name: Teste de fumaça
